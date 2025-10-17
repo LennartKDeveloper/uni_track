@@ -21,7 +21,12 @@ class HiveManager {
   }
 
   DateTime getWeekStart(DateTime date) {
-    return date.subtract(Duration(days: date.weekday - 1));
+    final monday = date.subtract(Duration(days: date.weekday - 1));
+    return DateTime(
+      monday.year,
+      monday.month,
+      monday.day,
+    ); // Zeitanteil nullen!
   }
 
   Future<void> ensureCurrentWeekData() async {
@@ -73,25 +78,20 @@ class HiveManager {
     final module = Module(name: name, link: link);
     await moduleBox.add(module);
 
-    // Füge Modul zu allen existierenden Wochen hinzu.
-    // Stelle außerdem sicher, dass das Modul in der aktuellen Woche vorhanden ist.
-    final currentWeek = getWeekStart(DateTime.now());
+    // Alle Wochen, in denen schon Module existieren
     final weeks = weeklyBox.values
         .map((w) => getWeekStart(w.weekStart))
         .toSet();
-
+    print(weeks);
+    // Falls keine Wochen existieren, aktuelle Woche anlegen
     if (weeks.isEmpty) {
-      // Keine Wochen vorhanden -> füge das Modul für die aktuelle Woche hinzu
-      weeklyBox.add(WeeklyModule(weekStart: currentWeek, module: module));
-    } else {
-      // Für alle bekannten Wochen hinzufügen
-      for (var week in weeks) {
-        weeklyBox.add(WeeklyModule(weekStart: week, module: module));
-      }
-      // Wenn die aktuelle Woche noch nicht vorhanden ist, auch dort hinzufügen
-      if (!weeks.contains(currentWeek)) {
-        weeklyBox.add(WeeklyModule(weekStart: currentWeek, module: module));
-      }
+      final currentMonday = getWeekStart(DateTime.now());
+      weeks.add(currentMonday);
+    }
+
+    // Modul zu allen Wochen hinzufügen
+    for (var week in weeks) {
+      weeklyBox.add(WeeklyModule(weekStart: week, module: module));
     }
   }
 

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:uni_track/features/home/data/hive_handler.dart';
 import 'package:uni_track/features/home/models/hive_modul.dart';
+import 'package:uni_track/features/home/models/hive_weekly_modul.dart';
+import 'package:uni_track/features/home/utils/modul_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -11,6 +14,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   DateTime selectedWeek = DateTime.now();
   final hiveManager = HiveManager();
+  late List<WeeklyModule> modules;
 
   @override
   void initState() {
@@ -21,8 +25,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final monday = hiveManager.getWeekStart(selectedWeek);
-    final sunday = monday.add(Duration(days: 6));
-    final modules = hiveManager.getWeeklyModules(selectedWeek);
+    final sunday = monday.add(const Duration(days: 6));
+    modules = hiveManager.getWeeklyModules(selectedWeek);
 
     return Scaffold(
       appBar: AppBar(
@@ -43,104 +47,74 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      body: ListView.builder(
+      body: ReorderableListView.builder(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         itemCount: modules.length + 1,
+        onReorder: (oldIndex, newIndex) {
+          setState(() {
+            if (newIndex > oldIndex) newIndex -= 1;
+            final item = modules.removeAt(oldIndex);
+            modules.insert(newIndex, item);
+          });
+        },
         itemBuilder: (context, index) {
           if (index == modules.length) {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  await hiveManager.addModule('Neues Modul', '');
-                  setState(() {});
-                },
-                icon: const Icon(Icons.add),
-                label: const Text('Modul hinzufügen'),
+            return GestureDetector(
+              key: const ValueKey('add_button'),
+              onTap: () async {
+                await hiveManager.addModule('Neues Modul', '');
+                await hiveManager.ensureCurrentWeekData();
+                setState(() {});
+              },
+              child: Container(
+                padding: EdgeInsets.all(3),
+                margin: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  //boxShadow: [BoxShadow(blurRadius: 6, color: Colors.black12)],
+                  border: Border.all(color: Colors.black, width: 1.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.add),
               ),
             );
           }
 
           final wm = modules[index];
-          return Card(
-            child: ListTile(
-              leading: Checkbox(
-                value: wm.isCompleted,
-                onChanged: (value) {
-                  setState(() {
-                    wm.isCompleted = value!;
-                    hiveManager.updateWeeklyModule(wm);
-                  });
-                },
-              ),
-              title: GestureDetector(
-                onTap: () async {
-                  final controller = TextEditingController(
-                    text: wm.module.name,
-                  );
-                  final result = await showDialog<String>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Modulname bearbeiten'),
-                      content: TextField(controller: controller),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, null),
-                          child: const Text('Abbrechen'),
-                        ),
-                        TextButton(
-                          onPressed: () =>
-                              Navigator.pop(context, controller.text),
-                          child: const Text('Speichern'),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (result != null) {
-                    setState(() {
-                      wm.module.name = result;
-                      hiveManager.updateWeeklyModule(wm);
-                    });
-                  }
-                },
-                child: Text(wm.module.name),
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      // Hier Link bearbeiten ähnlich wie oben
-                    },
-                    child: const Icon(Icons.link),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        // cycle importance
-                        if (wm.importance == Importance.red) {
-                          wm.importance = Importance.yellow;
-                        } else if (wm.importance == Importance.yellow) {
-                          wm.importance = Importance.green;
-                        } else {
-                          wm.importance = Importance.red;
-                        }
-                        hiveManager.updateWeeklyModule(wm);
-                      });
-                    },
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      color: wm.importance == Importance.red
-                          ? Colors.red
-                          : wm.importance == Importance.yellow
-                          ? Colors.yellow
-                          : Colors.green,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+
+          return WeeklyModuleCard(
+            key: ValueKey(wm.key ?? wm.hashCode),
+            wm: wm,
+            onCompletedChanged: (value) {
+              setState(() {
+                wm.isCompleted = value ?? false;
+                hiveManager.updateWeeklyModule(wm);
+              });
+            },
+            onNameChanged: (newName) {
+              wm.module.name = newName;
+              hiveManager.updateWeeklyModule(wm);
+            },
+            onLinkChanged: (newLink) {
+              wm.module.link = newLink;
+              hiveManager.updateWeeklyModule(wm);
+            },
+            onCycleImportance: () {
+              setState(() {
+                if (wm.importance == Importance.red) {
+                  wm.importance = Importance.yellow;
+                } else if (wm.importance == Importance.yellow) {
+                  wm.importance = Importance.green;
+                } else {
+                  wm.importance = Importance.red;
+                }
+                hiveManager.updateWeeklyModule(wm);
+              });
+            },
+            onDelete: () async {
+              await hiveManager.deleteWeeklyModule(wm);
+              setState(() {});
+            },
           );
         },
       ),
