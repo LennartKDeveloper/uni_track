@@ -12,7 +12,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Hive initialisieren (Flutter-spezifisch)
-  await Hive.initFlutter();
+  await Hive.initFlutter(); //jhgugiu
 
   // Adapter registrieren (Reihenfolge beachten: enum/Module zuerst)
   Hive.registerAdapter(ImportanceAdapter()); // enum adapter (typeId 0)
