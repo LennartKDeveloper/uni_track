@@ -30,6 +30,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: false,
         title: GestureDetector(
           onTap: () async {
             final picked = await showDatePicker(
@@ -42,8 +43,26 @@ class _HomePageState extends State<HomePage> {
               setState(() => selectedWeek = picked);
             }
           },
-          child: Text(
-            'Woche: ${monday.day}.${monday.month} - ${sunday.day}.${sunday.month}',
+          child: Container(
+            margin: EdgeInsets.only(left: 12, top: 20),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),
+              color: Colors.black,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Woche: ${monday.day}.${monday.month} - ${sunday.day}.${sunday.month}',
+                  style: Theme.of(context).textTheme.displayMedium!.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Icon(Icons.arrow_drop_down_outlined, color: Colors.white),
+              ],
+            ),
           ),
         ),
       ),

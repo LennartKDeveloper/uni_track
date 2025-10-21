@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uni_track/features/home/models/hive_modul.dart';
 import 'package:uni_track/features/home/models/hive_weekly_modul.dart';
+import 'package:uni_track/features/home/utils/fancy_checkbox.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class WeeklyModuleCard extends StatefulWidget {
@@ -205,6 +206,16 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                                     style: TextStyle(color: Colors.blue),
                                   ),
                                 ),
+                        ),
+                        FancyCheckbox(
+                          isChecked: widget.wm.isCompleted,
+                          onChanged: (value) =>
+                              widget.onCompletedChanged(value),
+                          activeColor: Theme.of(context).colorScheme.primary,
+                          inactiveBorderColor: Theme.of(
+                            context,
+                          ).colorScheme.secondary,
+                          size: 30,
                         ),
                       ],
                     ),
