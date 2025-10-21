@@ -122,10 +122,9 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                                     setState(() => editingName = false);
                                     widget.onNameChanged(val);
                                   },
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.displayMedium,
                                   decoration: InputDecoration(
                                     focusedBorder: UnderlineInputBorder(
                                       borderSide: BorderSide(
@@ -145,10 +144,9 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                                   child: Text(
                                     nameController.text,
 
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.displayMedium,
                                   ),
                                 ),
                         ),

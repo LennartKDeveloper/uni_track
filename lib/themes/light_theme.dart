@@ -12,13 +12,13 @@ final lightTheme = ThemeData(
   ),
   textTheme: TextTheme(
     displayMedium: GoogleFonts.inter(
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
+      fontSize: 17,
+      fontWeight: FontWeight.w400,
       color: Colors.black87,
     ),
     displayLarge: GoogleFonts.inter(
-      fontSize: 20,
-      fontWeight: FontWeight.w500,
+      fontSize: 23,
+      fontWeight: FontWeight.w400,
       color: Colors.black87,
     ),
     labelMedium: GoogleFonts.inter(
