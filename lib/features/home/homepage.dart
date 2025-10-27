@@ -48,7 +48,7 @@ class _HomePageState extends State<HomePage> {
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(30),
-              color: Colors.black,
+              color: Theme.of(context).colorScheme.primary,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -120,12 +120,13 @@ class _HomePageState extends State<HomePage> {
             },
             onCycleImportance: () {
               setState(() {
-                if (wm.importance == Importance.red) {
-                  wm.importance = Importance.yellow;
-                } else if (wm.importance == Importance.yellow) {
-                  wm.importance = Importance.green;
+                // cycle: 1 -> 2 -> 3 -> 1
+                if (wm.importance == 1) {
+                  wm.importance = 2;
+                } else if (wm.importance == 2) {
+                  wm.importance = 3;
                 } else {
-                  wm.importance = Importance.red;
+                  wm.importance = 1;
                 }
                 hiveManager.updateWeeklyModule(wm);
               });

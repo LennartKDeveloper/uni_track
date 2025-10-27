@@ -20,7 +20,7 @@ class WeeklyModuleAdapter extends TypeAdapter<WeeklyModule> {
       weekStart: fields[0] as DateTime,
       module: fields[1] as Module,
       isCompleted: fields[2] as bool,
-      importance: fields[3] as Importance,
+      importance: fields[3] as int,
     );
   }
 

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:uni_track/features/home/models/hive_modul.dart';
 import 'package:uni_track/features/home/models/hive_weekly_modul.dart';
 import 'package:uni_track/features/home/utils/fancy_checkbox.dart';
+import 'package:uni_track/shared/error_alert.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class WeeklyModuleCard extends StatefulWidget {
@@ -69,161 +71,218 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
 
   @override
   Widget build(BuildContext context) {
-    final color = switch (widget.wm.importance) {
-      Importance.red => Colors.red,
-      Importance.yellow => Colors.orange,
-      Importance.green => Colors.green,
-    };
+    // Falls noch an anderen Stellen eine Farbe gewünscht ist, mappe hier:
+    Color importanceColor;
+    if (widget.wm.importance == 1) {
+      importanceColor = Colors.red;
+    } else if (widget.wm.importance == 2) {
+      importanceColor = Colors.orange;
+    } else {
+      importanceColor = Colors.green;
+    }
 
-    return Container(
-      key: widget.key,
-      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        //boxShadow: [BoxShadow(blurRadius: 6, color: Colors.black12)],
-        border: Border.all(color: Colors.black, width: 1.2),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      // Wrap Row in IntrinsicHeight so the left stripe matches the content height
-      child: IntrinsicHeight(
-        child: Row(
+    double heightFactor;
+    if (widget.wm.importance == 1) {
+      heightFactor = 0.33;
+    } else if (widget.wm.importance == 2) {
+      heightFactor = 0.66;
+    } else {
+      heightFactor = 1;
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Slidable(
+        closeOnScroll: false, // Neccessary for ReorderableListview to Work
+        endActionPane: ActionPane(
+          motion: DrawerMotion(),
           children: [
-            // --- Left color stripe ---
-            GestureDetector(
-              onTap: widget.onCycleImportance,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  bottomLeft: Radius.circular(12),
-                ),
-                child: Container(width: 11, color: color),
-              ),
-            ),
-
-            // --- Main content ---
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 12,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Name Row + Delete Button
-                    Row(
-                      children: [
-                        Expanded(
-                          child: editingName
-                              ? TextField(
-                                  controller: nameController,
-                                  focusNode: nameFocusNode,
-                                  autofocus: true,
-                                  onSubmitted: (val) {
-                                    setState(() => editingName = false);
-                                    widget.onNameChanged(val);
-                                  },
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.displayMedium,
-                                  decoration: InputDecoration(
-                                    focusedBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Colors.black,
-                                        width: 1.2,
-                                      ), // 👈 Fokusfarbe
-                                    ),
-                                  ),
-                                )
-                              : GestureDetector(
-                                  onTap: () {
-                                    setState(() => editingName = true);
-                                    FocusScope.of(
-                                      context,
-                                    ).requestFocus(nameFocusNode);
-                                  },
-                                  child: Text(
-                                    nameController.text,
-
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.displayMedium,
-                                  ),
-                                ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline),
-                          color: Colors.grey[700],
-                          onPressed: widget.onDelete,
-                        ),
-                      ],
-                    ),
-
-                    // Link Row
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.link),
-                          onPressed: () async {
-                            final url = linkController.text.trim();
-                            if (url.isNotEmpty &&
-                                await canLaunchUrl(Uri.parse(url))) {
-                              await launchUrl(Uri.parse(url));
-                            }
-                          },
-                        ),
-                        Expanded(
-                          child: editingLink
-                              ? TextField(
-                                  controller: linkController,
-                                  focusNode: linkFocusNode,
-                                  autofocus: true,
-                                  onSubmitted: (val) {
-                                    setState(() => editingLink = false);
-                                    widget.onLinkChanged(val);
-                                  },
-                                  style: TextStyle(color: Colors.blue),
-                                  decoration: InputDecoration(
-                                    focusedBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Colors.blue,
-                                        width: 1.2,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : GestureDetector(
-                                  onTap: () {
-                                    setState(() => editingLink = true);
-                                    FocusScope.of(
-                                      context,
-                                    ).requestFocus(linkFocusNode);
-                                  },
-                                  child: Text(
-                                    linkController.text.isEmpty
-                                        ? 'Link hinzufügen'
-                                        : linkController.text,
-                                    style: TextStyle(color: Colors.blue),
-                                  ),
-                                ),
-                        ),
-                        FancyCheckbox(
-                          isChecked: widget.wm.isCompleted,
-                          onChanged: (value) =>
-                              widget.onCompletedChanged(value),
-                          activeColor: Theme.of(context).colorScheme.primary,
-                          inactiveBorderColor: Theme.of(
-                            context,
-                          ).colorScheme.secondary,
-                          size: 30,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+            SlidableAction(
+              borderRadius: BorderRadius.circular(12),
+              onPressed: (context) => widget.onDelete(),
+              icon: Icons.delete_outlined,
+              label: "Delete",
+              spacing: 10,
+              backgroundColor: const Color.fromARGB(255, 181, 1, 1),
             ),
           ],
+        ),
+        child: Container(
+          key: widget.key,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            //boxShadow: [BoxShadow(blurRadius: 6, color: Colors.black12)],
+            border: Border.all(color: Colors.black, width: 1.2),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          // Wrap Row in IntrinsicHeight so the left stripe matches the content height
+          child: IntrinsicHeight(
+            child: Row(
+              children: [
+                // --- Left area: show importance as number (clickable to cycle) ---
+                GestureDetector(
+                  onTap: widget.onCycleImportance,
+                  child: Stack(
+                    alignment: AlignmentDirectional.bottomCenter,
+                    children: [
+                      Container(color: Colors.grey[200]),
+                      SizedBox(
+                        width: 13,
+                        child: FractionallySizedBox(
+                          alignment: Alignment.bottomCenter,
+                          heightFactor: heightFactor,
+                          child: Container(
+                            width: 56,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.only(
+                                topLeft: heightFactor == 1
+                                    ? Radius.circular(9)
+                                    : Radius.circular(0),
+                                bottomLeft: Radius.circular(9),
+                              ),
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // --- Main content ---
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 10,
+                      horizontal: 12,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Name Row + Delete Button
+                        Row(
+                          children: [
+                            Expanded(
+                              child: editingName
+                                  ? TextField(
+                                      controller: nameController,
+                                      focusNode: nameFocusNode,
+                                      autofocus: true,
+                                      onSubmitted: (val) {
+                                        setState(() => editingName = false);
+                                        widget.onNameChanged(val);
+                                      },
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.displayMedium,
+                                      decoration: InputDecoration(
+                                        focusedBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.black,
+                                            width: 1.2,
+                                          ), // 👈 Fokusfarbe
+                                        ),
+                                      ),
+                                    )
+                                  : GestureDetector(
+                                      onTap: () {
+                                        setState(() => editingName = true);
+                                        FocusScope.of(
+                                          context,
+                                        ).requestFocus(nameFocusNode);
+                                      },
+                                      child: Text(
+                                        nameController.text,
+
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.displayMedium,
+                                      ),
+                                    ),
+                            ),
+                          ],
+                        ),
+
+                        // Link Row
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.link),
+                              onPressed: () async {
+                                final url = linkController.text.trim();
+                                try {
+                                  await launchUrl(Uri.parse(url));
+                                } catch (e) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return ErrorAlert();
+                                    },
+                                  );
+                                }
+                              },
+                            ),
+                            Expanded(
+                              child: editingLink
+                                  ? TextField(
+                                      controller: linkController,
+                                      focusNode: linkFocusNode,
+                                      autofocus: true,
+                                      onSubmitted: (val) {
+                                        setState(() => editingLink = false);
+                                        widget.onLinkChanged(val);
+                                      },
+                                      style: TextStyle(color: Colors.blue),
+                                      decoration: InputDecoration(
+                                        focusedBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.blue,
+                                            width: 1.2,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : GestureDetector(
+                                      onTap: () {
+                                        setState(() => editingLink = true);
+                                        FocusScope.of(
+                                          context,
+                                        ).requestFocus(linkFocusNode);
+                                      },
+                                      child: Text(
+                                        linkController.text.isEmpty
+                                            ? 'Link hinzufügen'
+                                            : linkController.text,
+                                        style: TextStyle(color: Colors.blue),
+                                      ),
+                                    ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 40,
+                  ),
+                  child: FancyCheckbox(
+                    isChecked: widget.wm.isCompleted,
+                    onChanged: (value) => widget.onCompletedChanged(value),
+                    activeColor: Theme.of(context).colorScheme.primary,
+                    inactiveBorderColor: Theme.of(
+                      context,
+                    ).colorScheme.secondary,
+                    size: 30,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

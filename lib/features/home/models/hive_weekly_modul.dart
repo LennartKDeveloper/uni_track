@@ -13,13 +13,14 @@ class WeeklyModule extends HiveObject {
   @HiveField(2)
   bool isCompleted;
 
+  // Ändere Typ von Importance -> int (1 = rot, 2 = gelb, 3 = grün)
   @HiveField(3)
-  Importance importance;
+  int importance;
 
   WeeklyModule({
     required this.weekStart,
     required this.module,
     this.isCompleted = false,
-    this.importance = Importance.red,
+    this.importance = 3, // default: 1 (rot)
   });
 }

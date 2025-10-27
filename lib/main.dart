@@ -15,7 +15,6 @@ void main() async {
   await Hive.initFlutter(); //jhgugiu
 
   // Adapter registrieren (Reihenfolge beachten: enum/Module zuerst)
-  Hive.registerAdapter(ImportanceAdapter()); // enum adapter (typeId 0)
   Hive.registerAdapter(ModuleAdapter()); // Module (typeId 1)
   Hive.registerAdapter(WeeklyModuleAdapter()); // WeeklyModule (typeId 2)
 
