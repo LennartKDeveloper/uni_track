@@ -14,6 +14,7 @@ class HiddenDrawer extends StatefulWidget {
 
 class _HiddenDrawerState extends State<HiddenDrawer> {
   List<ScreenHiddenDrawer> _pages = [];
+  // ignore: unused_field
   int _selectedIndex = 0; // Index der ausgewählten Seite
 
   final myTextStyle = TextStyle(

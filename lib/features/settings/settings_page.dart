@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
-import 'package:slide_to_act/slide_to_act.dart';
 import 'package:uni_track/features/settings/utils/data_download_alert.dart';
 import 'package:uni_track/features/settings/utils/icon_widget.dart';
 import 'package:uni_track/features/settings/utils/settings_group.dart';

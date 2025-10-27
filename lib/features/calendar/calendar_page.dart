@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:uni_track/features/calendar/data/calendar_sharedprefs_hander.dart';
 import 'package:uni_track/features/calendar/models/event.dart';

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:uni_track/features/home/models/hive_modul.dart';
 import 'package:uni_track/features/home/models/hive_weekly_modul.dart';
 import 'package:uni_track/features/home/utils/fancy_checkbox.dart';
 import 'package:uni_track/shared/error_alert.dart';
@@ -71,7 +70,8 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
 
   @override
   Widget build(BuildContext context) {
-    // Falls noch an anderen Stellen eine Farbe gewünscht ist, mappe hier:
+
+    // ignore: unused_local_variable
     Color importanceColor;
     if (widget.wm.importance == 1) {
       importanceColor = Colors.red;

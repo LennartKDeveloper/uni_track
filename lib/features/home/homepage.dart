@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:uni_track/features/home/data/hive_handler.dart';
-import 'package:uni_track/features/home/models/hive_modul.dart';
 import 'package:uni_track/features/home/models/hive_weekly_modul.dart';
 import 'package:uni_track/features/home/utils/modul_card.dart';
 

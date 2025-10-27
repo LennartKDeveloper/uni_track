@@ -90,6 +90,6 @@ class DataDownloadAlert extends StatelessWidget {
         ),
       ),
     );
-    ;
+    
   }
 }
