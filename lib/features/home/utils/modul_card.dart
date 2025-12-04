@@ -16,6 +16,7 @@ class WeeklyModuleCard extends StatefulWidget {
   const WeeklyModuleCard({
     super.key,
     required this.wm,
+
     required this.onCompletedChanged,
     required this.onNameChanged,
     required this.onLinkChanged,
@@ -40,7 +41,6 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
     super.initState();
     nameController = TextEditingController(text: widget.wm.module.name);
     linkController = TextEditingController(text: widget.wm.module.link);
-
     nameFocusNode = FocusNode();
     linkFocusNode = FocusNode();
 
@@ -70,7 +70,6 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
 
   @override
   Widget build(BuildContext context) {
-
     // ignore: unused_local_variable
     Color importanceColor;
     if (widget.wm.importance == 1) {
