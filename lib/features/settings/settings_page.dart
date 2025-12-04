@@ -66,16 +66,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
             Gap(20),
             SettingsGroup(
-              title: "FUNCTION",
-              children: <Widget>[
-                // Widgets in ListView
-                buildOrderSwitch(),
-                buildRewardSwitch(),
-              ],
-            ),
-
-            Gap(20),
-            SettingsGroup(
               title: "HELP",
               children: <Widget>[
                 // Widgets in ListView
@@ -95,17 +85,6 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
 
             Gap(20),
-            SettingsGroup(
-              title: "ACCOUNT",
-              children: <Widget>[
-                // Widgets in ListView
-                Gap(10),
-
-                buildDownloadTile(),
-
-                buildLogInTile(),
-              ],
-            ),
           ],
         ),
       ),
