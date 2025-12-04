@@ -41,7 +41,7 @@ class _HiddenDrawerState extends State<HiddenDrawer> {
     final pages = [
       ScreenHiddenDrawer(
         ItemHiddenMenu(
-          name: "Übungen",
+          name: "Module",
           baseStyle: textStyle,
           selectedStyle: textStyle,
           colorLineSelected: Colors.transparent,
