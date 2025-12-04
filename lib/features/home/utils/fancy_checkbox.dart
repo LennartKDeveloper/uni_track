@@ -119,7 +119,7 @@ class _FancyCheckboxState extends State<FancyCheckbox>
                   width: 2.0,
                 ),
               ),
-              // HIER IST DIE ÄNDERUNG:
+
               child: widget.isChecked
                   ? Center(
                       child: CustomPaint(
@@ -134,7 +134,7 @@ class _FancyCheckboxState extends State<FancyCheckbox>
                   : Icon(
                       widget.icon,
                       color: widget.inactiveBorderColor,
-                      // Icon-Größe relativ zur Container-Größe (z.B. 50%)
+
                       size: widget.size * 0.9,
                     ),
             ),

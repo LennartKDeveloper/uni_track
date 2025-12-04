@@ -64,7 +64,7 @@ class _FullScreenImagePageState extends State<FullScreenImagePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
           // Zoombares Bild
@@ -83,9 +83,14 @@ class _FullScreenImagePageState extends State<FullScreenImagePage> {
             top: 40,
             left: 20,
             child: CircleAvatar(
-              backgroundColor: Colors.black.withOpacity(0.5),
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.surface.withOpacity(0.6),
               child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white),
+                icon: Icon(
+                  Icons.close,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
                 onPressed: () => Navigator.pop(context),
               ),
             ),
@@ -102,7 +107,7 @@ class _FullScreenImagePageState extends State<FullScreenImagePage> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: Theme.of(context).scaffoldBackgroundColor,
-                    borderRadius: .circular(12),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,

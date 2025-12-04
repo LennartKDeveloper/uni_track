@@ -71,15 +71,7 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
 
   @override
   Widget build(BuildContext context) {
-    // ignore: unused_local_variable
-    Color importanceColor;
-    if (widget.wm.importance == 1) {
-      importanceColor = Colors.red;
-    } else if (widget.wm.importance == 2) {
-      importanceColor = Colors.orange;
-    } else {
-      importanceColor = Colors.green;
-    }
+    // choose importance color but prefer theme-aware colors
 
     double heightFactor;
     if (widget.wm.importance == 1) {
@@ -103,16 +95,19 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
               icon: Icons.delete_outlined,
               label: "Delete",
               spacing: 10,
-              backgroundColor: const Color.fromARGB(255, 181, 1, 1),
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           ],
         ),
         child: Container(
           key: widget.key,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).scaffoldBackgroundColor,
             //boxShadow: [BoxShadow(blurRadius: 6, color: Colors.black12)],
-            border: Border.all(color: Colors.black, width: 1.2),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.onSurface,
+              width: 1.2,
+            ),
             borderRadius: BorderRadius.circular(12),
           ),
           // Wrap Row in IntrinsicHeight so the left stripe matches the content height
@@ -125,7 +120,7 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                   child: Stack(
                     alignment: AlignmentDirectional.bottomCenter,
                     children: [
-                      Container(color: Colors.grey[200]),
+                      Container(color: Theme.of(context).colorScheme.surface),
                       SizedBox(
                         width: 13,
                         child: FractionallySizedBox(
@@ -141,7 +136,7 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                                     : Radius.circular(0),
                                 bottomLeft: Radius.circular(9),
                               ),
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ),
@@ -180,7 +175,9 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                                       decoration: InputDecoration(
                                         focusedBorder: UnderlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: Colors.black,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
                                             width: 1.2,
                                           ), // 👈 Fokusfarbe
                                         ),
@@ -234,11 +231,17 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                                         setState(() => editingLink = false);
                                         widget.onLinkChanged(val);
                                       },
-                                      style: TextStyle(color: Colors.blue),
+                                      style: TextStyle(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                      ),
                                       decoration: InputDecoration(
                                         focusedBorder: UnderlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: Colors.blue,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
                                             width: 1.2,
                                           ),
                                         ),
@@ -255,7 +258,11 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                                         linkController.text.isEmpty
                                             ? 'Link hinzufügen'
                                             : linkController.text,
-                                        style: TextStyle(color: Colors.blue),
+                                        style: TextStyle(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
+                                        ),
                                       ),
                                     ),
                             ),
@@ -281,12 +288,18 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                         inactiveBorderColor: Theme.of(
                           context,
                         ).colorScheme.secondary,
+                        checkColor: Theme.of(
+                          context,
+                        ).colorScheme.inverseSurface,
                         size: 30,
                       ),
 
                       FancyCheckbox(
                         icon: Icons.fitness_center_outlined,
                         isChecked: widget.wm.isTaskCompleted,
+                        checkColor: Theme.of(
+                          context,
+                        ).colorScheme.inverseSurface,
                         onChanged: (value) =>
                             widget.onTaskCompletedChanged(value),
                         activeColor: Theme.of(context).colorScheme.primary,

@@ -20,13 +20,13 @@ class SwitchableIconWidget extends StatelessWidget {
       return Container(
         padding: EdgeInsets.all(6),
         decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-        child: Icon(icon, color: Colors.white),
+        child: Icon(icon, color: Theme.of(context).colorScheme.onPrimary),
       );
     } else {
       return Container(
         padding: EdgeInsets.all(6),
         decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-        child: Icon(icon2, color: Colors.white),
+        child: Icon(icon2, color: Theme.of(context).colorScheme.onPrimary),
       );
     }
   }

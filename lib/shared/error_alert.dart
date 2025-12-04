@@ -8,7 +8,7 @@ class ErrorAlert extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).dialogBackgroundColor,
       content: SizedBox(
         height: 240,
         child: Padding(
@@ -18,7 +18,11 @@ class ErrorAlert extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Gap(15),
-              Icon(Icons.wifi_off_rounded, size: 50),
+              Icon(
+                Icons.wifi_off_rounded,
+                size: 50,
+                color: Theme.of(context).colorScheme.error,
+              ),
               Gap(30),
               Text(
                 "Kein Internet!",

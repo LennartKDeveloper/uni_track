@@ -148,7 +148,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _addNewImage,
         backgroundColor: Theme.of(context).colorScheme.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
       ),
     );
   }
@@ -156,11 +156,11 @@ class _DocumentsPageState extends State<DocumentsPage> {
   Widget _buildImageCard(GalleryItem item, int index) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(15.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Theme.of(context).shadowColor.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -181,9 +181,12 @@ class _DocumentsPageState extends State<DocumentsPage> {
                     File(item.imagePath),
                     fit: BoxFit.cover,
                     errorBuilder: (ctx, err, stack) => Container(
-                      color: Colors.grey.shade200,
+                      color: Theme.of(context).colorScheme.surface,
                       alignment: Alignment.center,
-                      child: const Icon(Icons.broken_image, color: Colors.grey),
+                      child: Icon(
+                        Icons.broken_image,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                   ),
                 ),

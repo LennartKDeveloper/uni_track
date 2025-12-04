@@ -14,75 +14,7 @@ class HiddenDrawer extends StatefulWidget {
 }
 
 class _HiddenDrawerState extends State<HiddenDrawer> {
-  List<ScreenHiddenDrawer> _pages = [];
-  // ignore: unused_field
   int _selectedIndex = 0; // Index der ausgewählten Seite
-
-  final myTextStyle = TextStyle(
-    // Text Style vom Hidden Drawer menu
-    fontWeight: FontWeight.bold,
-    fontSize: 18,
-    color: Colors.white,
-  );
-
-  @override
-  void initState() {
-    super.initState();
-    _loadPages();
-  }
-
-  void _loadPages() {
-    _pages = [
-      ScreenHiddenDrawer(
-        ItemHiddenMenu(
-          name: "Übungen",
-          baseStyle: myTextStyle,
-          selectedStyle: myTextStyle,
-          colorLineSelected: Colors.transparent,
-          onTap: () {
-            _updateIndex(0);
-          },
-        ),
-        HomePage(),
-      ),
-      ScreenHiddenDrawer(
-        ItemHiddenMenu(
-          name: "Kalender",
-          baseStyle: myTextStyle,
-          selectedStyle: myTextStyle,
-          colorLineSelected: Colors.transparent,
-          onTap: () {
-            _updateIndex(1);
-          },
-        ),
-        CalendarPage(),
-      ),
-      ScreenHiddenDrawer(
-        ItemHiddenMenu(
-          name: "Dokumente",
-          baseStyle: myTextStyle,
-          selectedStyle: myTextStyle,
-          colorLineSelected: Colors.transparent,
-          onTap: () {
-            _updateIndex(2);
-          },
-        ),
-        DocumentsPage(),
-      ),
-      ScreenHiddenDrawer(
-        ItemHiddenMenu(
-          name: "Einstellungen",
-          baseStyle: myTextStyle,
-          selectedStyle: myTextStyle,
-          colorLineSelected: Colors.transparent,
-          onTap: () {
-            _updateIndex(3);
-          },
-        ),
-        SettingsPage(),
-      ),
-    ];
-  }
 
   void _updateIndex(int index) {
     setState(() {
@@ -94,19 +26,73 @@ class _HiddenDrawerState extends State<HiddenDrawer> {
   void refreshAllPages() {
     setState(() {
       // Du kannst hier andere Logiken hinzufügen, um alle Seiten zu aktualisieren
-      _loadPages(); // Wenn du die Seiten neu laden möchtest
+      // Seiten neu bauen (werden im build() generiert)
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final textStyle = Theme.of(context).textTheme.displayLarge!.copyWith(
+      fontWeight: FontWeight.bold,
+      fontSize: 18,
+      color: Colors.white,
+    );
+
+    final pages = [
+      ScreenHiddenDrawer(
+        ItemHiddenMenu(
+          name: "Übungen",
+          baseStyle: textStyle,
+          selectedStyle: textStyle,
+          colorLineSelected: Colors.transparent,
+          onTap: () {
+            _updateIndex(0);
+          },
+        ),
+        HomePage(),
+      ),
+      ScreenHiddenDrawer(
+        ItemHiddenMenu(
+          name: "Kalender",
+          baseStyle: textStyle,
+          selectedStyle: textStyle,
+          colorLineSelected: Colors.transparent,
+          onTap: () {
+            _updateIndex(1);
+          },
+        ),
+        CalendarPage(),
+      ),
+      ScreenHiddenDrawer(
+        ItemHiddenMenu(
+          name: "Dokumente",
+          baseStyle: textStyle,
+          selectedStyle: textStyle,
+          colorLineSelected: Colors.transparent,
+          onTap: () {
+            _updateIndex(2);
+          },
+        ),
+        DocumentsPage(),
+      ),
+      ScreenHiddenDrawer(
+        ItemHiddenMenu(
+          name: "Einstellungen",
+          baseStyle: textStyle,
+          selectedStyle: textStyle,
+          colorLineSelected: Colors.transparent,
+          onTap: () {
+            _updateIndex(3);
+          },
+        ),
+        SettingsPage(),
+      ),
+    ];
     return HiddenDrawerMenu(
       elevationAppBar: 0,
       backgroundColorAppBar: Theme.of(context).scaffoldBackgroundColor,
-      backgroundColorMenu: Theme.of(
-        context,
-      ).colorScheme.primary, //Hidden drawer Farbe
-      screens: _pages,
+      backgroundColorMenu: Theme.of(context).canvasColor, //Hidden drawer Farbe
+      screens: pages,
       initPositionSelected: 0,
       slidePercent: 40,
       styleAutoTittleName: Theme.of(context).textTheme.displayLarge,

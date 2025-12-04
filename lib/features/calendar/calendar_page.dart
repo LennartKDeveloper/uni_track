@@ -130,11 +130,11 @@ class _CalendarPageState extends State<CalendarPage> {
     double end = initialStart + initialDuration;
     Color selectedColor = existingEvent != null
         ? Color(existingEvent.colorValue)
-        : Colors.blueAccent;
+        : Theme.of(context).colorScheme.primary;
 
     final List<Color> colors = [
-      Colors.blueAccent,
-      Colors.redAccent,
+      Theme.of(context).colorScheme.primary,
+      Theme.of(context).colorScheme.error,
       Colors.green,
       Colors.orange,
       Colors.purpleAccent,
@@ -168,21 +168,30 @@ class _CalendarPageState extends State<CalendarPage> {
                         isEditing
                             ? "Termin bearbeiten"
                             : "Neuer Termin (${_weekDays[dayIndex]})",
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.displayLarge
+                            ?.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                       if (isEditing)
                         IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
+                          icon: Icon(
+                            Icons.delete,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
                           onPressed: () {
                             // Dialog schließen
                             Navigator.pop(context);
                             // Event löschen
                             _deleteEvent(existingEvent.id);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Termin gelöscht")),
+                              SnackBar(
+                                content: Text("Termin gelöscht"),
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.error,
+                              ),
                             );
                           },
                         ),
@@ -199,7 +208,9 @@ class _CalendarPageState extends State<CalendarPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       filled: true,
-                      fillColor: Colors.grey[100],
+                      fillColor: Theme.of(
+                        context,
+                      ).colorScheme.surface.withOpacity(0.85),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -213,7 +224,9 @@ class _CalendarPageState extends State<CalendarPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       filled: true,
-                      fillColor: Colors.grey[100],
+                      fillColor: Theme.of(
+                        context,
+                      ).colorScheme.surface.withOpacity(0.85),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -253,13 +266,20 @@ class _CalendarPageState extends State<CalendarPage> {
                             color: c,
                             shape: BoxShape.circle,
                             border: selectedColor == c
-                                ? Border.all(color: Colors.black, width: 2)
+                                ? Border.all(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                    width: 2,
+                                  )
                                 : null,
                           ),
                           child: selectedColor == c
-                              ? const Icon(
+                              ? Icon(
                                   Icons.check,
-                                  color: Colors.white,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
                                   size: 20,
                                 )
                               : null,
@@ -274,7 +294,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black87,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -292,9 +312,11 @@ class _CalendarPageState extends State<CalendarPage> {
                         )) {
                           // Fehlermeldung zeigen
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text("Achtung: Zeitüberschneidung!"),
-                              backgroundColor: Colors.red,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.error,
                             ),
                           );
                           return; // Nicht speichern
@@ -345,7 +367,7 @@ class _CalendarPageState extends State<CalendarPage> {
     if (_isLoading) return const Center(child: CircularProgressIndicator());
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -353,10 +375,10 @@ class _CalendarPageState extends State<CalendarPage> {
             Container(
               height: 50,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).scaffoldBackgroundColor,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Theme.of(context).shadowColor.withOpacity(0.05),
                     blurRadius: 5,
                     offset: const Offset(0, 5),
                   ),
@@ -371,10 +393,13 @@ class _CalendarPageState extends State<CalendarPage> {
                       child: Center(
                         child: Text(
                           _weekDays[index],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                          ),
+                          style: Theme.of(context).textTheme.displayMedium!
+                              .copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(
+                                  context,
+                                ).textTheme.labelMedium!.color,
+                              ),
                         ),
                       ),
                     ),
@@ -408,10 +433,10 @@ class _CalendarPageState extends State<CalendarPage> {
                                     child: Text(
                                       "${_startHour + index}:00",
                                       textAlign: TextAlign.right,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelMedium
+                                          ?.copyWith(fontSize: 12),
                                     ),
                                   ),
                                 ),
@@ -420,10 +445,14 @@ class _CalendarPageState extends State<CalendarPage> {
                                     decoration: BoxDecoration(
                                       border: Border(
                                         top: BorderSide(
-                                          color: Colors.grey.withOpacity(0.2),
+                                          color: Theme.of(
+                                            context,
+                                          ).dividerColor.withOpacity(0.2),
                                         ),
                                         left: BorderSide(
-                                          color: Colors.grey.withOpacity(0.2),
+                                          color: Theme.of(
+                                            context,
+                                          ).dividerColor.withOpacity(0.2),
                                         ),
                                       ),
                                     ),
@@ -517,7 +546,9 @@ class _CalendarPageState extends State<CalendarPage> {
                                       borderRadius: BorderRadius.circular(6),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.2),
+                                          color: Theme.of(
+                                            context,
+                                          ).shadowColor.withOpacity(0.2),
                                           blurRadius: 2,
                                           offset: const Offset(0, 1),
                                         ),

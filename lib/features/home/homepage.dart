@@ -29,6 +29,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         centerTitle: false,
         title: GestureDetector(
           onTap: () async {
@@ -55,11 +56,14 @@ class _HomePageState extends State<HomePage> {
                 Text(
                   'Woche: ${monday.day}.${monday.month} - ${sunday.day}.${sunday.month}',
                   style: Theme.of(context).textTheme.displayMedium!.copyWith(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                Icon(Icons.arrow_drop_down_outlined, color: Colors.white),
+                Icon(
+                  Icons.arrow_drop_down_outlined,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
               ],
             ),
           ),
@@ -88,12 +92,18 @@ class _HomePageState extends State<HomePage> {
                 padding: EdgeInsets.all(3),
                 margin: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   //boxShadow: [BoxShadow(blurRadius: 6, color: Colors.black12)],
-                  border: Border.all(color: Colors.black, width: 1.2),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    width: 1.0,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.add),
+                child: Icon(
+                  Icons.add,
+                  color: Theme.of(context).iconTheme.color,
+                ),
               ),
             );
           }

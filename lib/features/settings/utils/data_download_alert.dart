@@ -21,12 +21,15 @@ class DataDownloadAlert extends StatelessWidget {
         child: Column(
           children: [
             Gap(15),
-            Icon(Icons.cloud_download_rounded, size: 50),
+            Icon(
+              Icons.cloud_download_rounded,
+              size: 50,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             Gap(25),
             Text(
               "Are you sure?",
-              style: TextStyle(
-                color: Colors.white,
+              style: Theme.of(context).textTheme.displayLarge?.copyWith(
                 fontWeight: FontWeight.bold,
                 fontSize: 25,
               ),
@@ -38,7 +41,9 @@ class DataDownloadAlert extends StatelessWidget {
               child: Center(
                 child: Text(
                   "If you send the data from the cloud to the email:  $currentUserEmail\nThis data will irretrievably overwrite all data stored on this device.",
-                  style: TextStyle(color: Colors.grey.shade300),
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: Theme.of(context).textTheme.labelMedium!.color,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -70,17 +75,20 @@ class DataDownloadAlert extends StatelessWidget {
                 height: 50,
                 sliderButtonIconPadding: 10,
                 sliderButtonIconSize: 20,
-                innerColor: Colors.white,
-                outerColor: Colors.red.shade700,
+                innerColor: Theme.of(context).colorScheme.onPrimary,
+                outerColor: Theme.of(context).colorScheme.error,
                 sliderButtonIcon: Icon(
                   Icons.warning_amber_rounded,
-                  color: Colors.red.shade700,
+                  color: Theme.of(context).colorScheme.error,
                   size: 25,
                 ),
                 borderRadius: 12,
 
                 text: "Slide to execute",
-                textStyle: TextStyle(fontSize: 16, color: Colors.white),
+                textStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  fontSize: 16,
+                ),
                 onSubmit: () async {
                   callback();
                 },
@@ -90,6 +98,5 @@ class DataDownloadAlert extends StatelessWidget {
         ),
       ),
     );
-    
   }
 }

@@ -36,7 +36,7 @@ class SettingsGroup extends StatelessWidget {
         // Inhalte
         Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
+            color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(8),
             // boxShadow: [
             //   BoxShadow(

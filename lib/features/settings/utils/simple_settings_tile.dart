@@ -24,7 +24,7 @@ class SimpleSettingTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
