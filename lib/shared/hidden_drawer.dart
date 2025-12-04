@@ -53,7 +53,7 @@ class _HiddenDrawerState extends State<HiddenDrawer> {
       ),
       ScreenHiddenDrawer(
         ItemHiddenMenu(
-          name: "Kalender",
+          name: "Stundenplan",
           baseStyle: textStyle,
           selectedStyle: textStyle,
           colorLineSelected: Colors.transparent,

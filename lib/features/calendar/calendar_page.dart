@@ -100,25 +100,23 @@ class _CalendarPageState extends State<CalendarPage> {
     BuildContext context, {
     required int dayIndex,
     double? startHourSuggestion,
-    TimetableEvent? existingEvent, // Wenn gesetzt, sind wir im "Edit Mode"
+    TimetableEvent? existingEvent,
   }) {
     final bool isEditing = existingEvent != null;
 
-    // Startwerte ermitteln
+    // Startwerte ermitteln (wie vorher)
     double initialStart =
         existingEvent?.startHour ??
         startHourSuggestion ??
         _startHour.toDouble();
     if (!isEditing) {
-      initialStart = initialStart
-          .floorToDouble(); // Beim Neuanlegen auf volle Stunde runden
+      initialStart = initialStart.floorToDouble();
       if (initialStart < _startHour) initialStart = _startHour.toDouble();
       if (initialStart >= _endHour) initialStart = (_endHour - 1).toDouble();
     }
 
     double initialDuration = existingEvent?.duration ?? 1.0;
 
-    // Controller & State für Dialog
     final titleController = TextEditingController(
       text: existingEvent?.title ?? "",
     );
@@ -143,209 +141,222 @@ class _CalendarPageState extends State<CalendarPage> {
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
+      isScrollControlled: true, // Wichtig, damit das Sheet wachsen kann
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setModalState) {
+            // HIER IST DIE ÄNDERUNG:
+            // Wir nutzen Padding um viewInsets, aber packen alles in SingleChildScrollView.
+            // Das Padding wird auf das Child des ScrollViews angewendet oder direkt darin.
             return Padding(
+              // Wir geben dem Sheet nur von unten Druck, wenn die Tastatur kommt
               padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: SingleChildScrollView(
+                // Das ScrollView fängt den Overflow ab
+                child: Padding(
+                  // Inneres Padding für den hübschen Rand
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        isEditing
-                            ? "Termin bearbeiten"
-                            : "Neuer Termin (${_weekDays[dayIndex]})",
-                        style: Theme.of(context).textTheme.displayLarge
-                            ?.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      if (isEditing)
-                        IconButton(
-                          icon: Icon(
-                            Icons.delete,
-                            color: Theme.of(context).colorScheme.error,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            isEditing
+                                ? "Termin bearbeiten"
+                                : "Neuer Termin (${_weekDays[dayIndex]})",
+                            style: Theme.of(context).textTheme.displayLarge
+                                ?.copyWith(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
-                          onPressed: () {
-                            // Dialog schließen
-                            Navigator.pop(context);
-                            // Event löschen
-                            _deleteEvent(existingEvent.id);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("Termin gelöscht"),
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.error,
+                          if (isEditing)
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete,
+                                color: Theme.of(context).colorScheme.error,
                               ),
-                            );
-                          },
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Titel
-                  TextField(
-                    controller: titleController,
-                    decoration: InputDecoration(
-                      labelText: "Titel (z.B. Mathe)",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      filled: true,
-                      fillColor: Theme.of(
-                        context,
-                      ).colorScheme.surface.withOpacity(0.85),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Raum
-                  TextField(
-                    controller: roomController,
-                    decoration: InputDecoration(
-                      labelText: "Raum (z.B. H101)",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      filled: true,
-                      fillColor: Theme.of(
-                        context,
-                      ).colorScheme.surface.withOpacity(0.85),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Zeit Slider
-                  Text("Zeitraum: ${_formatTime(start)} - ${_formatTime(end)}"),
-                  RangeSlider(
-                    values: RangeValues(start, end),
-                    min: _startHour.toDouble(),
-                    max: _endHour.toDouble(),
-                    divisions: (_endHour - _startHour) * 2, // 30 Min Schritte
-                    labels: RangeLabels(_formatTime(start), _formatTime(end)),
-                    onChanged: (values) {
-                      if (values.end - values.start >= 0.5) {
-                        // Mind. 30 Min
-                        setModalState(() {
-                          start = values.start;
-                          end = values.end;
-                        });
-                      }
-                    },
-                  ),
-
-                  // Farbe
-                  const SizedBox(height: 12),
-                  const Text("Farbe"),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: colors.map((c) {
-                      return GestureDetector(
-                        onTap: () => setModalState(() => selectedColor = c),
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: c,
-                            shape: BoxShape.circle,
-                            border: selectedColor == c
-                                ? Border.all(
-                                    color: Theme.of(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                _deleteEvent(existingEvent.id);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text("Termin gelöscht"),
+                                    backgroundColor: Theme.of(
                                       context,
-                                    ).colorScheme.onSurface,
-                                    width: 2,
-                                  )
-                                : null,
-                          ),
-                          child: selectedColor == c
-                              ? Icon(
-                                  Icons.check,
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onPrimary,
-                                  size: 20,
-                                )
-                              : null,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 24),
+                                    ).colorScheme.error,
+                                  ),
+                                );
+                              },
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
 
-                  // Speichern Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                      // Titel
+                      TextField(
+                        controller: titleController,
+                        // autofocus: true, // Optional: Tastatur öffnet sich sofort
+                        decoration: InputDecoration(
+                          labelText: "Titel (z.B. Mathe)",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Theme.of(
+                            context,
+                          ).colorScheme.surface.withOpacity(0.85),
                         ),
                       ),
-                      onPressed: () {
-                        if (titleController.text.isEmpty) return;
+                      const SizedBox(height: 12),
 
-                        // 1. Überschneidung prüfen
-                        if (_hasOverlap(
-                          dayIndex,
-                          start,
-                          end,
-                          excludeId: existingEvent?.id,
-                        )) {
-                          // Fehlermeldung zeigen
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("Achtung: Zeitüberschneidung!"),
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.error,
+                      // Raum
+                      TextField(
+                        controller: roomController,
+                        decoration: InputDecoration(
+                          labelText: "Raum (z.B. H101)",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Theme.of(
+                            context,
+                          ).colorScheme.surface.withOpacity(0.85),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Zeit Slider
+                      Text(
+                        "Zeitraum: ${_formatTime(start)} - ${_formatTime(end)}",
+                      ),
+                      RangeSlider(
+                        values: RangeValues(start, end),
+                        min: _startHour.toDouble(),
+                        max: _endHour.toDouble(),
+                        divisions: (_endHour - _startHour) * 2,
+                        labels: RangeLabels(
+                          _formatTime(start),
+                          _formatTime(end),
+                        ),
+                        onChanged: (values) {
+                          if (values.end - values.start >= 0.5) {
+                            setModalState(() {
+                              start = values.start;
+                              end = values.end;
+                            });
+                          }
+                        },
+                      ),
+
+                      // Farbe
+                      const SizedBox(height: 12),
+                      const Text("Farbe"),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: colors.map((c) {
+                          return GestureDetector(
+                            onTap: () => setModalState(() => selectedColor = c),
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: c,
+                                shape: BoxShape.circle,
+                                border: selectedColor == c
+                                    ? Border.all(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurface,
+                                        width: 2,
+                                      )
+                                    : null,
+                              ),
+                              child: selectedColor == c
+                                  ? Icon(
+                                      Icons.check,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onPrimary,
+                                      size: 20,
+                                    )
+                                  : null,
                             ),
                           );
-                          return; // Nicht speichern
-                        }
-
-                        // 2. Speichern
-                        _addOrUpdateEvent(
-                          TimetableEvent(
-                            id:
-                                existingEvent?.id ??
-                                DateTime.now().toIso8601String(),
-                            title: titleController.text,
-                            room: roomController.text,
-                            dayIndex: dayIndex,
-                            startHour: start,
-                            duration: end - start,
-                            colorValue: selectedColor.value,
-                          ),
-                        );
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        isEditing ? "Änderungen speichern" : "Erstellen",
-                        style: const TextStyle(color: Colors.white),
+                        }).toList(),
                       ),
-                    ),
+                      const SizedBox(height: 24),
+
+                      // Speichern Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            if (titleController.text.isEmpty) return;
+
+                            if (_hasOverlap(
+                              dayIndex,
+                              start,
+                              end,
+                              excludeId: existingEvent?.id,
+                            )) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text(
+                                    "Achtung: Zeitüberschneidung!",
+                                  ),
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.error,
+                                ),
+                              );
+                              return;
+                            }
+
+                            _addOrUpdateEvent(
+                              TimetableEvent(
+                                id:
+                                    existingEvent?.id ??
+                                    DateTime.now().toIso8601String(),
+                                title: titleController.text,
+                                room: roomController.text,
+                                dayIndex: dayIndex,
+                                startHour: start,
+                                duration: end - start,
+                                colorValue: selectedColor.value,
+                              ),
+                            );
+                            Navigator.pop(context);
+                          },
+                          child: Text(
+                            isEditing ? "Änderungen speichern" : "Erstellen",
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      // Ein kleiner Gap unten, damit es nicht direkt am Rand klebt beim Scrollen
+                      const Gap(20),
+                    ],
                   ),
-                  Gap(20),
-                ],
+                ),
               ),
             );
           },
