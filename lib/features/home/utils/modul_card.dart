@@ -7,7 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 class WeeklyModuleCard extends StatefulWidget {
   final WeeklyModule wm;
-  final ValueChanged<bool?> onCompletedChanged;
+  final ValueChanged<bool?> onLectureCompletedChanged;
+  final ValueChanged<bool?> onTaskCompletedChanged;
   final ValueChanged<String> onNameChanged;
   final ValueChanged<String> onLinkChanged;
   final VoidCallback onCycleImportance;
@@ -16,12 +17,12 @@ class WeeklyModuleCard extends StatefulWidget {
   const WeeklyModuleCard({
     super.key,
     required this.wm,
-
-    required this.onCompletedChanged,
     required this.onNameChanged,
     required this.onLinkChanged,
     required this.onCycleImportance,
     required this.onDelete,
+    required this.onLectureCompletedChanged,
+    required this.onTaskCompletedChanged,
   });
 
   @override
@@ -264,19 +265,37 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 40,
-                  ),
-                  child: FancyCheckbox(
-                    isChecked: widget.wm.isCompleted,
-                    onChanged: (value) => widget.onCompletedChanged(value),
-                    activeColor: Theme.of(context).colorScheme.primary,
-                    inactiveBorderColor: Theme.of(
-                      context,
-                    ).colorScheme.secondary,
-                    size: 30,
+                SizedBox(
+                  height: 110,
+                  width: 70,
+                  child: Column(
+                    mainAxisAlignment: .spaceEvenly,
+                    crossAxisAlignment: .center,
+                    children: [
+                      FancyCheckbox(
+                        icon: Icons.book_outlined,
+                        isChecked: widget.wm.isLectureCompleted,
+                        onChanged: (value) =>
+                            widget.onLectureCompletedChanged(value),
+                        activeColor: Theme.of(context).colorScheme.primary,
+                        inactiveBorderColor: Theme.of(
+                          context,
+                        ).colorScheme.secondary,
+                        size: 30,
+                      ),
+
+                      FancyCheckbox(
+                        icon: Icons.fitness_center_outlined,
+                        isChecked: widget.wm.isTaskCompleted,
+                        onChanged: (value) =>
+                            widget.onTaskCompletedChanged(value),
+                        activeColor: Theme.of(context).colorScheme.primary,
+                        inactiveBorderColor: Theme.of(
+                          context,
+                        ).colorScheme.secondary,
+                        size: 30,
+                      ),
+                    ],
                   ),
                 ),
               ],

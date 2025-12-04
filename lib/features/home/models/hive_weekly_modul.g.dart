@@ -19,7 +19,8 @@ class WeeklyModuleAdapter extends TypeAdapter<WeeklyModule> {
     return WeeklyModule(
       weekStart: fields[0] as DateTime,
       module: fields[1] as Module,
-      isCompleted: fields[2] as bool,
+      isLectureCompleted: fields[2] as bool,
+      isTaskCompleted: fields[4] as bool,
       importance: fields[3] as int,
     );
   }
@@ -27,15 +28,17 @@ class WeeklyModuleAdapter extends TypeAdapter<WeeklyModule> {
   @override
   void write(BinaryWriter writer, WeeklyModule obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.weekStart)
       ..writeByte(1)
       ..write(obj.module)
       ..writeByte(2)
-      ..write(obj.isCompleted)
+      ..write(obj.isLectureCompleted)
       ..writeByte(3)
-      ..write(obj.importance);
+      ..write(obj.importance)
+      ..writeByte(4)
+      ..write(obj.isTaskCompleted);
   }
 
   @override

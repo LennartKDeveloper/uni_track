@@ -103,9 +103,15 @@ class _HomePageState extends State<HomePage> {
           return WeeklyModuleCard(
             key: ValueKey(wm.key ?? wm.hashCode),
             wm: wm,
-            onCompletedChanged: (value) {
+            onLectureCompletedChanged: (value) {
               setState(() {
-                wm.isCompleted = value ?? false;
+                wm.isLectureCompleted = value ?? false;
+                hiveManager.updateWeeklyModule(wm);
+              });
+            },
+            onTaskCompletedChanged: (value) {
+              setState(() {
+                wm.isTaskCompleted = value ?? false;
                 hiveManager.updateWeeklyModule(wm);
               });
             },

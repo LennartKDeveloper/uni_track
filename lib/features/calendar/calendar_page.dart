@@ -1,252 +1,571 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
-import 'package:uni_track/features/calendar/data/calendar_sharedprefs_hander.dart';
-import 'package:uni_track/features/calendar/models/event.dart';
-import 'package:intl/date_symbol_data_local.dart'; // <-- neu: Locale-Initialisierung import
+import 'package:gap/gap.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uni_track/features/calendar/timetable_event.dart';
 
-// ####################################################################
-// # 1. Datenmodell für einen Termin
-// #    Diese Klasse repräsentiert einen einzelnen Kalendereintrag.
-// ####################################################################
+// --- DATENMODELL ---
 
-// ####################################################################
-// # 2. DataHandler zur persistenten Speicherung
-// #    Diese Klasse kümmert sich um das Laden und Speichern der
-// #    Termine mithilfe von SharedPreferences.
-// ####################################################################
+// --- HAUPTWIDGET ---
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
 
   @override
-  _CalendarPageState createState() => _CalendarPageState();
+  State<CalendarPage> createState() => _CalendarPageState();
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  // Instanz des DataHandlers für die Datenpersistenz.
-  final CalendarSharedprefsHander dataHandler = CalendarSharedprefsHander();
+  // Konfiguration
+  final int _startHour = 8;
+  final int _endHour = 20;
+  final double _hourHeight = 60.0;
+  final List<String> _weekDays = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];
 
-  // State-Variablen
-  late final ValueNotifier<List<Event>> _selectedEvents;
-  Map<DateTime, List<Event>> _events = {};
-  DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
-  final TextEditingController _eventController = TextEditingController();
-
-  // Neu: Flag, das anzeigt, ob Locale-Daten initialisiert wurden.
-  bool _localeInitialized = false;
+  // State
+  List<TimetableEvent> _events = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _selectedDay = _focusedDay;
-    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
-    _loadEventsFromStorage();
-    _initializeLocale(); // <-- neu: Locale-Initialisierung starten
+    _loadEvents();
   }
 
-  @override
-  void dispose() {
-    _selectedEvents.dispose();
-    _eventController.dispose();
-    super.dispose();
-  }
+  // --- LOGIK: LADEN, SPEICHERN, PRÜFEN ---
 
-  // Lädt die Termine beim Start der App.
-  void _loadEventsFromStorage() async {
-    final loadedEvents = await dataHandler.loadEvents();
-    setState(() {
-      _events = loadedEvents;
-    });
-    _selectedEvents.value = _getEventsForDay(_selectedDay!);
-  }
-
-  // Speichert die Termine, wann immer eine Änderung vorgenommen wird.
-  void _saveEventsToStorage() {
-    dataHandler.saveEvents(_events);
-  }
-
-  // Hilfsmethode, um die Termine für einen bestimmten Tag zu erhalten.
-  List<Event> _getEventsForDay(DateTime day) {
-    // Wichtig: Normalisiert das Datum auf Mitternacht, um Vergleiche zu ermöglichen.
-    DateTime normalizedDay = DateTime.utc(day.year, day.month, day.day);
-    return _events[normalizedDay] ?? [];
-  }
-
-  // Wird aufgerufen, wenn ein Tag im Kalender ausgewählt wird.
-  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
-    if (!isSameDay(_selectedDay, selectedDay)) {
+  Future<void> _loadEvents() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? eventsJson = prefs.getString('timetable_events');
+    if (eventsJson != null) {
+      final List<dynamic> decoded = jsonDecode(eventsJson);
       setState(() {
-        _selectedDay = selectedDay;
-        _focusedDay = focusedDay;
+        _events = decoded.map((e) => TimetableEvent.fromMap(e)).toList();
+        _isLoading = false;
       });
-      _selectedEvents.value = _getEventsForDay(selectedDay);
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
-  // Zeigt einen Dialog zum Hinzufügen eines neuen Termins an.
-  void _showAddEventDialog() {
-    showDialog(
+  Future<void> _saveEvents() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String encoded = jsonEncode(_events.map((e) => e.toMap()).toList());
+    await prefs.setString('timetable_events', encoded);
+  }
+
+  // Prüft auf Überschneidungen
+  // excludeId: Wird beim Bearbeiten benötigt, damit das Event nicht mit sich selbst kollidiert
+  bool _hasOverlap(
+    int dayIndex,
+    double start,
+    double end, {
+    String? excludeId,
+  }) {
+    for (final event in _events) {
+      if (event.id == excludeId) continue; // Sich selbst ignorieren
+      if (event.dayIndex != dayIndex) continue; // Anderer Tag
+
+      double eventEnd = event.startHour + event.duration;
+
+      // Logik: (StartA < EndB) und (EndA > StartB) bedeutet Überlappung
+      if (start < eventEnd && end > event.startHour) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void _addOrUpdateEvent(TimetableEvent newEvent) {
+    setState(() {
+      // Falls wir bearbeiten (ID existiert schon), altes entfernen
+      _events.removeWhere((e) => e.id == newEvent.id);
+      _events.add(newEvent);
+    });
+    _saveEvents();
+  }
+
+  void _deleteEvent(String id) {
+    setState(() {
+      _events.removeWhere((e) => e.id == id);
+    });
+    _saveEvents();
+  }
+
+  // --- DIALOG FÜR NEUE / BEARBEITEN ---
+
+  void _showEventDialog(
+    BuildContext context, {
+    required int dayIndex,
+    double? startHourSuggestion,
+    TimetableEvent? existingEvent, // Wenn gesetzt, sind wir im "Edit Mode"
+  }) {
+    final bool isEditing = existingEvent != null;
+
+    // Startwerte ermitteln
+    double initialStart =
+        existingEvent?.startHour ??
+        startHourSuggestion ??
+        _startHour.toDouble();
+    if (!isEditing) {
+      initialStart = initialStart
+          .floorToDouble(); // Beim Neuanlegen auf volle Stunde runden
+      if (initialStart < _startHour) initialStart = _startHour.toDouble();
+      if (initialStart >= _endHour) initialStart = (_endHour - 1).toDouble();
+    }
+
+    double initialDuration = existingEvent?.duration ?? 1.0;
+
+    // Controller & State für Dialog
+    final titleController = TextEditingController(
+      text: existingEvent?.title ?? "",
+    );
+    final roomController = TextEditingController(
+      text: existingEvent?.room ?? "",
+    );
+
+    double start = initialStart;
+    double end = initialStart + initialDuration;
+    Color selectedColor = existingEvent != null
+        ? Color(existingEvent.colorValue)
+        : Colors.blueAccent;
+
+    final List<Color> colors = [
+      Colors.blueAccent,
+      Colors.redAccent,
+      Colors.green,
+      Colors.orange,
+      Colors.purpleAccent,
+      Colors.teal,
+    ];
+
+    showModalBottomSheet(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Neuen Termin hinzufügen'),
-          content: TextField(
-            controller: _eventController,
-            autofocus: true,
-            decoration: const InputDecoration(hintText: 'Terminbeschreibung'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Abbrechen'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (_eventController.text.isEmpty) return;
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        isEditing
+                            ? "Termin bearbeiten"
+                            : "Neuer Termin (${_weekDays[dayIndex]})",
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (isEditing)
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            // Dialog schließen
+                            Navigator.pop(context);
+                            // Event löschen
+                            _deleteEvent(existingEvent.id);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Termin gelöscht")),
+                            );
+                          },
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
 
-                final normalizedDay = DateTime.utc(
-                  _selectedDay!.year,
-                  _selectedDay!.month,
-                  _selectedDay!.day,
-                );
+                  // Titel
+                  TextField(
+                    controller: titleController,
+                    decoration: InputDecoration(
+                      labelText: "Titel (z.B. Mathe)",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
 
-                setState(() {
-                  if (_events[normalizedDay] != null) {
-                    _events[normalizedDay]!.add(
-                      Event(title: _eventController.text),
-                    );
-                  } else {
-                    _events[normalizedDay] = [
-                      Event(title: _eventController.text),
-                    ];
-                  }
-                  _eventController.clear();
-                  _selectedEvents.value = _getEventsForDay(normalizedDay);
-                  _saveEventsToStorage();
-                });
+                  // Raum
+                  TextField(
+                    controller: roomController,
+                    decoration: InputDecoration(
+                      labelText: "Raum (z.B. H101)",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
 
-                Navigator.pop(context);
-              },
-              child: const Text('Hinzufügen'),
-            ),
-          ],
+                  // Zeit Slider
+                  Text("Zeitraum: ${_formatTime(start)} - ${_formatTime(end)}"),
+                  RangeSlider(
+                    values: RangeValues(start, end),
+                    min: _startHour.toDouble(),
+                    max: _endHour.toDouble(),
+                    divisions: (_endHour - _startHour) * 2, // 30 Min Schritte
+                    labels: RangeLabels(_formatTime(start), _formatTime(end)),
+                    onChanged: (values) {
+                      if (values.end - values.start >= 0.5) {
+                        // Mind. 30 Min
+                        setModalState(() {
+                          start = values.start;
+                          end = values.end;
+                        });
+                      }
+                    },
+                  ),
+
+                  // Farbe
+                  const SizedBox(height: 12),
+                  const Text("Farbe"),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: colors.map((c) {
+                      return GestureDetector(
+                        onTap: () => setModalState(() => selectedColor = c),
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: c,
+                            shape: BoxShape.circle,
+                            border: selectedColor == c
+                                ? Border.all(color: Colors.black, width: 2)
+                                : null,
+                          ),
+                          child: selectedColor == c
+                              ? const Icon(
+                                  Icons.check,
+                                  color: Colors.white,
+                                  size: 20,
+                                )
+                              : null,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Speichern Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black87,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        if (titleController.text.isEmpty) return;
+
+                        // 1. Überschneidung prüfen
+                        if (_hasOverlap(
+                          dayIndex,
+                          start,
+                          end,
+                          excludeId: existingEvent?.id,
+                        )) {
+                          // Fehlermeldung zeigen
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Achtung: Zeitüberschneidung!"),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return; // Nicht speichern
+                        }
+
+                        // 2. Speichern
+                        _addOrUpdateEvent(
+                          TimetableEvent(
+                            id:
+                                existingEvent?.id ??
+                                DateTime.now().toIso8601String(),
+                            title: titleController.text,
+                            room: roomController.text,
+                            dayIndex: dayIndex,
+                            startHour: start,
+                            duration: end - start,
+                            colorValue: selectedColor.value,
+                          ),
+                        );
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        isEditing ? "Änderungen speichern" : "Erstellen",
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  Gap(20),
+                ],
+              ),
+            );
+          },
         );
       },
     );
   }
 
-  // Neu: Locale-Daten asynchron initialisieren.
-  Future<void> _initializeLocale() async {
-    try {
-      await initializeDateFormatting('de_DE', null);
-    } catch (_) {
-      // Falls die Initialisierung fehlschlägt, weiter ohne Locale (stumm behandeln)
-    }
-    if (mounted) {
-      setState(() {
-        _localeInitialized = true;
-      });
-    }
+  // --- UI HELPER ---
+
+  String _formatTime(double hour) {
+    int h = hour.floor();
+    int m = ((hour - h) * 60).round();
+    return "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}";
   }
 
-  // UI-Build-Methode
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Mein Kalender')),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddEventDialog,
-        child: const Icon(Icons.add),
-      ),
-      body: Column(
-        children: [
-          // Das Kalender-Widget
-          TableCalendar<Event>(
-            firstDay: DateTime.utc(2020, 1, 1),
-            lastDay: DateTime.utc(2030, 12, 31),
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            onDaySelected: _onDaySelected,
-            eventLoader: _getEventsForDay,
-            calendarStyle: const CalendarStyle(
-              // Hebt den heutigen Tag hervor
-              todayDecoration: BoxDecoration(
-                color: Colors.orangeAccent,
-                shape: BoxShape.circle,
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // HEADER
+            Container(
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 5,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
               ),
-              // Hebt den ausgewählten Tag hervor
-              selectedDecoration: BoxDecoration(
-                color: Colors.blueAccent,
-                shape: BoxShape.circle,
-              ),
-            ),
-            headerStyle: const HeaderStyle(
-              formatButtonVisible:
-                  false, // Versteckt den "2 Weeks/Month"-Button
-              titleCentered: true,
-            ),
-            // Deutsche Lokalisierung — nur setzen, wenn initialisiert
-            locale: _localeInitialized ? 'de_DE' : null,
-          ),
-          const SizedBox(height: 8.0),
-          const Divider(),
-          // Liste der Termine für den ausgewählten Tag
-          Expanded(
-            child: ValueListenableBuilder<List<Event>>(
-              valueListenable: _selectedEvents,
-              builder: (context, value, _) {
-                if (value.isEmpty) {
-                  return const Center(
-                    child: Text('Keine Termine für diesen Tag.'),
-                  );
-                }
-                return ListView.builder(
-                  itemCount: value.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 12.0,
-                        vertical: 4.0,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(),
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      child: ListTile(
-                        onTap: () => print('${value[index]}'),
-                        title: Text('${value[index]}'),
-                        // Hier könnte man eine Lösch-Funktion hinzufügen
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline),
-                          onPressed: () {
-                            final normalizedDay = DateTime.utc(
-                              _selectedDay!.year,
-                              _selectedDay!.month,
-                              _selectedDay!.day,
-                            );
-                            setState(() {
-                              _events[normalizedDay]!.removeWhere(
-                                (event) => event.title == value[index].title,
-                              );
-                              if (_events[normalizedDay]!.isEmpty) {
-                                _events.remove(normalizedDay);
-                              }
-                              _selectedEvents.value = _getEventsForDay(
-                                normalizedDay,
-                              );
-                              _saveEventsToStorage();
-                            });
-                          },
+              child: Row(
+                children: [
+                  const SizedBox(width: 50),
+                  ...List.generate(
+                    5,
+                    (index) => Expanded(
+                      child: Center(
+                        child: Text(
+                          _weekDays[index],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
-                    );
-                  },
-                );
-              },
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+
+            // GRID
+            Expanded(
+              child: SingleChildScrollView(
+                child: SizedBox(
+                  height: (_endHour - _startHour) * _hourHeight,
+                  child: Stack(
+                    children: [
+                      // 1. Hintergrund-Linien & Zeit
+                      Column(
+                        children: List.generate(_endHour - _startHour, (index) {
+                          return SizedBox(
+                            height: _hourHeight,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: 50,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 5,
+                                      right: 8,
+                                    ),
+                                    child: Text(
+                                      "${_startHour + index}:00",
+                                      textAlign: TextAlign.right,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        top: BorderSide(
+                                          color: Colors.grey.withOpacity(0.2),
+                                        ),
+                                        left: BorderSide(
+                                          color: Colors.grey.withOpacity(0.2),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      ),
+
+                      // 2. Vertikale Tag-Trenner
+                      Row(
+                        children: [
+                          const SizedBox(width: 50),
+                          ...List.generate(
+                            5,
+                            (index) => Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    right: BorderSide(
+                                      color: Colors.grey.withOpacity(0.1),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // 3. INTERAKTIONS-LAYER FÜR NEUE TERMINE (Hintergrund-Klicks)
+                      // WICHTIG: Dies muss VOR den Events im Stack kommen (also weiter unten im Code),
+                      // oder wir müssen sicherstellen, dass Events drüber liegen.
+                      // Hier legen wir den "leeren" Klickbereich zuerst, damit Events (die später kommen) darüber liegen.
+                      Row(
+                        children: [
+                          const SizedBox(width: 50),
+                          ...List.generate(5, (dayIndex) {
+                            return Expanded(
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.translucent,
+                                onTapUp: (details) {
+                                  final double y = details.localPosition.dy;
+                                  final double clickedHour =
+                                      _startHour + (y / _hourHeight);
+                                  // Dialog für NEUEN Termin
+                                  _showEventDialog(
+                                    context,
+                                    dayIndex: dayIndex,
+                                    startHourSuggestion: clickedHour,
+                                  );
+                                },
+                                child: Container(color: Colors.transparent),
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+
+                      // 4. DIE EVENTS (Drübergelegt, damit sie klickbar sind)
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final double dayWidth =
+                              (constraints.maxWidth - 50) / 5;
+
+                          return Stack(
+                            children: _events.map((event) {
+                              return Positioned(
+                                left: 50 + (event.dayIndex * dayWidth),
+                                top:
+                                    (event.startHour - _startHour) *
+                                    _hourHeight,
+                                width: dayWidth - 2,
+                                height: event.duration * _hourHeight,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    // Dialog zum BEARBEITEN
+                                    _showEventDialog(
+                                      context,
+                                      dayIndex: event.dayIndex,
+                                      existingEvent: event,
+                                    );
+                                  },
+                                  child: Container(
+                                    margin: const EdgeInsets.all(1),
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: Color(event.colorValue),
+                                      borderRadius: BorderRadius.circular(6),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.2),
+                                          blurRadius: 2,
+                                          offset: const Offset(0, 1),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          event.title,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        if (event.duration > 0.5) ...[
+                                          // Nur anzeigen wenn genug Platz
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            event.room,
+                                            style: TextStyle(
+                                              color: Colors.white.withOpacity(
+                                                0.9,
+                                              ),
+                                              fontSize: 10,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

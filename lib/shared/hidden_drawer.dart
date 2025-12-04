@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hidden_drawer_menu/hidden_drawer_menu.dart';
 import 'package:uni_track/features/calendar/calendar_page.dart';
+import 'package:uni_track/features/documents/ducuments_page.dart';
 import 'package:uni_track/features/home/homepage.dart';
 
 import 'package:uni_track/features/settings/settings_page.dart';
@@ -58,12 +59,24 @@ class _HiddenDrawerState extends State<HiddenDrawer> {
       ),
       ScreenHiddenDrawer(
         ItemHiddenMenu(
-          name: "Einstellungen",
+          name: "Dokumente",
           baseStyle: myTextStyle,
           selectedStyle: myTextStyle,
           colorLineSelected: Colors.transparent,
           onTap: () {
             _updateIndex(2);
+          },
+        ),
+        DocumentsPage(),
+      ),
+      ScreenHiddenDrawer(
+        ItemHiddenMenu(
+          name: "Einstellungen",
+          baseStyle: myTextStyle,
+          selectedStyle: myTextStyle,
+          colorLineSelected: Colors.transparent,
+          onTap: () {
+            _updateIndex(3);
           },
         ),
         SettingsPage(),

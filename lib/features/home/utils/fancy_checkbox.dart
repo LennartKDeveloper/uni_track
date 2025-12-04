@@ -8,6 +8,7 @@ class FancyCheckbox extends StatefulWidget {
   final Color checkColor;
   final double size;
   final Duration animationDuration;
+  final IconData icon; // Dieses Icon wird nun genutzt
 
   const FancyCheckbox({
     super.key,
@@ -18,6 +19,7 @@ class FancyCheckbox extends StatefulWidget {
     this.checkColor = Colors.white,
     this.size = 60.0,
     this.animationDuration = const Duration(milliseconds: 400),
+    required this.icon,
   });
 
   @override
@@ -39,6 +41,7 @@ class _FancyCheckboxState extends State<FancyCheckbox>
       duration: widget.animationDuration,
     );
 
+    // Skalierungseffekt beim Aktivieren
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
       CurvedAnimation(
         parent: _animationController,
@@ -46,6 +49,7 @@ class _FancyCheckboxState extends State<FancyCheckbox>
       ),
     );
 
+    // Animation für das Zeichnen des Hakens
     _checkAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _animationController,
@@ -53,6 +57,7 @@ class _FancyCheckboxState extends State<FancyCheckbox>
       ),
     );
 
+    // Farbübergang von Grau zu Grün
     _colorAnimation =
         ColorTween(
           begin: widget.inactiveBorderColor,
@@ -76,7 +81,7 @@ class _FancyCheckboxState extends State<FancyCheckbox>
       if (widget.isChecked) {
         _animationController.forward(from: 0.0);
       } else {
-        // Bei Deaktivierung ohne Animation zurücksetzen
+        // Bei Deaktivierung ohne Animation zurücksetzen (wie gewünscht)
         _animationController.value = 0.0;
       }
     }
@@ -107,14 +112,14 @@ class _FancyCheckboxState extends State<FancyCheckbox>
               height: widget.size,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
+                // Wenn gecheckt: Hintergrundfarbe animiert, sonst transparent
                 color: widget.isChecked ? currentColor : Colors.transparent,
                 border: Border.all(
-                  color: widget.isChecked
-                      ? currentColor!
-                      : widget.inactiveBorderColor,
+                  color: widget.isChecked ? currentColor! : Colors.transparent,
                   width: 2.0,
                 ),
               ),
+              // HIER IST DIE ÄNDERUNG:
               child: widget.isChecked
                   ? Center(
                       child: CustomPaint(
@@ -126,7 +131,12 @@ class _FancyCheckboxState extends State<FancyCheckbox>
                         size: Size(widget.size * 0.5, widget.size * 0.5),
                       ),
                     )
-                  : null,
+                  : Icon(
+                      widget.icon,
+                      color: widget.inactiveBorderColor,
+                      // Icon-Größe relativ zur Container-Größe (z.B. 50%)
+                      size: widget.size * 0.9,
+                    ),
             ),
           );
         },
@@ -156,6 +166,7 @@ class _CheckPainter extends CustomPainter {
       ..strokeWidth = strokeWidth;
 
     final path = Path();
+    // Koordinaten für den Haken
     final Offset start = Offset(size.width * 0.1, size.height * 0.5);
     final Offset corner = Offset(size.width * 0.4, size.height * 0.8);
     final Offset end = Offset(size.width * 0.9, size.height * 0.2);

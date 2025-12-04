@@ -11,16 +11,20 @@ class WeeklyModule extends HiveObject {
   Module module; // Referenz auf das Modul
 
   @HiveField(2)
-  bool isCompleted;
+  bool isLectureCompleted;
 
   // Ändere Typ von Importance -> int (1 = rot, 2 = gelb, 3 = grün)
   @HiveField(3)
   int importance;
 
+  @HiveField(4)
+  bool isTaskCompleted;
+
   WeeklyModule({
     required this.weekStart,
     required this.module,
-    this.isCompleted = false,
+    this.isLectureCompleted = false,
+    this.isTaskCompleted = false,
     this.importance = 3, // default: 1 (rot)
   });
 }
