@@ -38,7 +38,7 @@ class HiveManager {
         .toSet();
 
     if (!existingWeeks.contains(monday)) {
-      // finde letzte Woche
+      // Finde letzte Woche
       final lastWeek = existingWeeks.isNotEmpty
           ? existingWeeks.reduce((a, b) => a.isAfter(b) ? a : b)
           : monday.subtract(Duration(days: 7));
@@ -49,17 +49,31 @@ class HiveManager {
           .toList();
 
       if (lastWeekModules.isEmpty) {
-        // falls es noch keine Module gibt -> erstmal nur leere Module
+        // Fall A: Ganz frischer Start (noch gar keine Wochen-Daten)
+        // Wir vergeben hier initial 0, 1, 2... als Reihenfolge
+        int index = 0;
         for (var module in moduleBox.values) {
-          weeklyBox.add(WeeklyModule(weekStart: monday, module: module));
+          weeklyBox.add(
+            WeeklyModule(
+              weekStart: monday,
+              module: module,
+              sortOrder: index++, // <--- NEU: Initial durchnummerieren
+            ),
+          );
         }
       } else {
+        // Fall B: Kopie der letzten Woche
         for (var old in lastWeekModules) {
           weeklyBox.add(
             WeeklyModule(
               weekStart: monday,
               module: old.module,
+              // WICHTIG: Die Sortierung der alten Woche übernehmen!
+              sortOrder: old.sortOrder,
+              // Status (Tasks) zurücksetzen, Wichtigkeit behalten
               importance: old.importance,
+              isLectureCompleted: false,
+              isTaskCompleted: false,
             ),
           );
         }
@@ -69,29 +83,51 @@ class HiveManager {
 
   List<WeeklyModule> getWeeklyModules(DateTime weekStart) {
     final monday = getWeekStart(weekStart);
-    return weeklyBox.values
+    final list = weeklyBox.values
         .where((w) => getWeekStart(w.weekStart) == monday)
         .toList();
+
+    // NEU: Sortierung anwenden
+    list.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+
+    return list;
   }
 
   Future<void> addModule(String name, String link) async {
     final module = Module(name: name, link: link);
     await moduleBox.add(module);
 
-    // Alle Wochen, in denen schon Module existieren
     final weeks = weeklyBox.values
         .map((w) => getWeekStart(w.weekStart))
         .toSet();
-    print(weeks);
-    // Falls keine Wochen existieren, aktuelle Woche anlegen
+
     if (weeks.isEmpty) {
-      final currentMonday = getWeekStart(DateTime.now());
-      weeks.add(currentMonday);
+      weeks.add(getWeekStart(DateTime.now()));
     }
 
-    // Modul zu allen Wochen hinzufügen
     for (var week in weeks) {
-      weeklyBox.add(WeeklyModule(weekStart: week, module: module));
+      // Hole alle Module dieser Woche, um den höchsten sortOrder zu finden
+      final modulesInWeek = weeklyBox.values.where(
+        (w) => getWeekStart(w.weekStart) == week,
+      );
+
+      // Bestimme den höchsten vorhandenen Index (oder -1 wenn leer)
+      int maxSortOrder = -1;
+      if (modulesInWeek.isNotEmpty) {
+        // Wir mappen auf sortOrder und nehmen das Maximum
+        maxSortOrder = modulesInWeek
+            .map((m) => m.sortOrder)
+            .reduce((curr, next) => curr > next ? curr : next);
+      }
+
+      // Neues Modul bekommt (max + 1), also landet es ganz unten
+      weeklyBox.add(
+        WeeklyModule(
+          weekStart: week,
+          module: module,
+          sortOrder: maxSortOrder + 1, // <--- NEU
+        ),
+      );
     }
   }
 

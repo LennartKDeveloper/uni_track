@@ -20,11 +20,15 @@ class WeeklyModule extends HiveObject {
   @HiveField(4)
   bool isTaskCompleted;
 
+  @HiveField(5)
+  int sortOrder;
+
   WeeklyModule({
     required this.weekStart,
     required this.module,
     this.isLectureCompleted = false,
     this.isTaskCompleted = false,
     this.importance = 3, // default: 1 (rot)
+    this.sortOrder = 0,
   });
 }

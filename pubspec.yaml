@@ -9,6 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations: # Das hier hinzufügen
+    sdk: flutter
+
   flutter_slidable: ^4.0.3
   gap: ^3.0.1
   google_fonts: ^6.3.2

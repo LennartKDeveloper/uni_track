@@ -35,6 +35,7 @@ class _HomePageState extends State<HomePage> {
           onTap: () async {
             final picked = await showDatePicker(
               context: context,
+              locale: const Locale("de", "DE"),
               initialDate: selectedWeek,
               firstDate: DateTime(2020),
               lastDate: DateTime.now(),
@@ -73,10 +74,28 @@ class _HomePageState extends State<HomePage> {
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         itemCount: modules.length + 1,
         onReorder: (oldIndex, newIndex) {
+          // Verhindern, dass der Add-Button (Index = length) verschoben wird
+          if (oldIndex >= modules.length) return;
+
           setState(() {
+            // Flutter Reorder Logic Fix
             if (newIndex > oldIndex) newIndex -= 1;
+
+            // Verhindern, dass Items HINTER den Add-Button geschoben werden
+            if (newIndex >= modules.length) newIndex = modules.length - 1;
+
+            // Liste lokal aktualisieren
             final item = modules.removeAt(oldIndex);
             modules.insert(newIndex, item);
+
+            // NEU: Die neue Position in Hive speichern
+            for (int i = 0; i < modules.length; i++) {
+              final wm = modules[i];
+              if (wm.sortOrder != i) {
+                wm.sortOrder = i;
+                hiveManager.updateWeeklyModule(wm); // Speichert in DB
+              }
+            }
           });
         },
         itemBuilder: (context, index) {

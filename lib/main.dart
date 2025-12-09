@@ -7,6 +7,7 @@ import 'package:uni_track/shared/hidden_drawer.dart';
 import 'package:uni_track/themes/dark_theme.dart';
 import 'package:uni_track/themes/light_theme.dart';
 import 'package:uni_track/themes/theme_notifier.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +40,16 @@ class MainApp extends StatelessWidget {
             themeMode: themeNotifier.themeMode,
             theme: lightTheme,
             darkTheme: darkTheme,
+            supportedLocales: const [
+              Locale('de', 'DE'), // Deutsch
+              Locale('en', 'US'), // Englisch (als Fallback)
+            ],
+            // Hier lädst du die Übersetzungen für Material Widgets (wie den DatePicker):
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             home: const HiddenDrawer(),
           );
         },
