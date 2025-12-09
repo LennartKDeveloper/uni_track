@@ -1,4 +1,4 @@
-package com.example.uni_track
+package com.lennartk.uni_track
 
 import io.flutter.embedding.android.FlutterActivity
 
