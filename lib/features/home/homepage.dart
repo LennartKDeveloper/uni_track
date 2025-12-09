@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:uni_track/features/home/data/hive_handler.dart';
 import 'package:uni_track/features/home/models/hive_weekly_modul.dart';
-import 'package:uni_track/features/home/utils/modul_card.dart';
+
+import 'package:uni_track/features/home/utils/send_snackbar.dart';
+import 'package:uni_track/features/home/utils/weekly_modul_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,10 +19,117 @@ class _HomePageState extends State<HomePage> {
   final hiveManager = HiveManager();
   late List<WeeklyModule> modules;
 
+  // Keys einmalig definieren
+  final GlobalKey linkKey = GlobalKey();
+  final GlobalKey linkButtonKey = GlobalKey();
+  final GlobalKey lectureButtonKey = GlobalKey();
+  final GlobalKey taskButtonKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
     hiveManager.ensureCurrentWeekData().then((_) => setState(() {}));
+    // HIER KEIN TUTORIAL AUFRUF MEHR!
+  }
+
+  // Diese Funktion wird vom Add-Button aufgerufen
+  Future<void> _checkAndShowTutorialAfterAdd() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    final prefs = await SharedPreferences.getInstance();
+    final alreadyShown = prefs.getBool('navigationTutorialShown') ?? false;
+
+    if (!alreadyShown) {
+      // WICHTIG: Warten, damit das neue Widget gerendert ist
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (!mounted) return; // Check ob Screen noch da ist
+
+      showTutorial();
+      await prefs.setBool('navigationTutorialShown', true);
+    }
+  }
+
+  void showTutorial() {
+    TextStyle txtstyle = Theme.of(
+      context,
+    ).textTheme.displayLarge!.copyWith(fontSize: 18, color: Colors.white);
+    List<TargetFocus> targets = [];
+    targets.addAll([
+      TargetFocus(
+        identify: "Text",
+        keyTarget: linkKey,
+        shape: ShapeLightFocus.RRect,
+        radius: 15,
+        paddingFocus: 5,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            child: Text(
+              "Füge hier den Link zu deinen Unterlagen hinzu",
+              style: txtstyle,
+            ),
+          ),
+        ],
+      ),
+      TargetFocus(
+        identify: "IconButton",
+        keyTarget: linkButtonKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.right,
+            child: Text(
+              "um ihn über diesen Button zu öffnen !",
+              style: txtstyle,
+            ),
+          ),
+        ],
+      ),
+      TargetFocus(
+        identify: "FancyCheckBox",
+        keyTarget: lectureButtonKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.left,
+            child: Text(
+              "Markiere hier deine bearbeitete Vorlesung",
+              style: txtstyle,
+            ),
+          ),
+        ],
+      ),
+      TargetFocus(
+        identify: "FancyCheckBox",
+        keyTarget: taskButtonKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.left,
+            child: Text("und hier deine fertige Übung !", style: txtstyle),
+          ),
+        ],
+      ),
+    ]);
+
+    TutorialCoachMark(
+      targets: targets,
+      colorShadow: Colors.black.withOpacity(0.8),
+      textSkip: "Überspringen",
+      textStyleSkip: Theme.of(
+        context,
+      ).textTheme.displayLarge!.copyWith(fontSize: 16, color: Colors.white),
+      onSkip: () {
+        sendSnackbar(
+          context,
+          Theme.of(context).textTheme.displayMedium?.color ?? Colors.black,
+          "Los gehts !",
+        );
+        return true;
+      },
+      onFinish: () => sendSnackbar(
+        context,
+        Theme.of(context).textTheme.displayMedium?.color ?? Colors.black,
+        "Los gehts !",
+      ),
+    ).show(context: context);
   }
 
   @override
@@ -74,26 +185,20 @@ class _HomePageState extends State<HomePage> {
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         itemCount: modules.length + 1,
         onReorder: (oldIndex, newIndex) {
-          // Verhindern, dass der Add-Button (Index = length) verschoben wird
           if (oldIndex >= modules.length) return;
 
           setState(() {
-            // Flutter Reorder Logic Fix
             if (newIndex > oldIndex) newIndex -= 1;
-
-            // Verhindern, dass Items HINTER den Add-Button geschoben werden
             if (newIndex >= modules.length) newIndex = modules.length - 1;
 
-            // Liste lokal aktualisieren
             final item = modules.removeAt(oldIndex);
             modules.insert(newIndex, item);
 
-            // NEU: Die neue Position in Hive speichern
             for (int i = 0; i < modules.length; i++) {
               final wm = modules[i];
               if (wm.sortOrder != i) {
                 wm.sortOrder = i;
-                hiveManager.updateWeeklyModule(wm); // Speichert in DB
+                hiveManager.updateWeeklyModule(wm);
               }
             }
           });
@@ -106,13 +211,13 @@ class _HomePageState extends State<HomePage> {
                 await hiveManager.addModule('Neues Modul', '');
                 await hiveManager.ensureCurrentWeekData();
                 setState(() {});
+                _checkAndShowTutorialAfterAdd();
               },
               child: Container(
                 padding: EdgeInsets.all(3),
                 margin: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 decoration: BoxDecoration(
                   color: Theme.of(context).cardColor,
-                  //boxShadow: [BoxShadow(blurRadius: 6, color: Colors.black12)],
                   border: Border.all(
                     color: Theme.of(context).colorScheme.onSurface,
                     width: 1.0,
@@ -129,7 +234,15 @@ class _HomePageState extends State<HomePage> {
 
           final wm = modules[index];
 
+          // NUR DAS ERSTE ELEMENT BEKOMMT DIE KEYS
+          final bool isFirstItem = index == 0;
+
           return WeeklyModuleCard(
+            linkKey: isFirstItem ? linkKey : null,
+            linkButtonKey: isFirstItem ? linkButtonKey : null,
+            lectureButtonKey: isFirstItem ? lectureButtonKey : null,
+            taskButtonKey: isFirstItem ? taskButtonKey : null,
+
             key: ValueKey(wm.key ?? wm.hashCode),
             wm: wm,
             onLectureCompletedChanged: (value) {
@@ -154,7 +267,6 @@ class _HomePageState extends State<HomePage> {
             },
             onCycleImportance: () {
               setState(() {
-                // cycle: 1 -> 2 -> 3 -> 1
                 if (wm.importance == 1) {
                   wm.importance = 2;
                 } else if (wm.importance == 2) {

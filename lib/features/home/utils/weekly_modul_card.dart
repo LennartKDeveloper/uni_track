@@ -7,6 +7,12 @@ import 'package:url_launcher/url_launcher.dart';
 
 class WeeklyModuleCard extends StatefulWidget {
   final WeeklyModule wm;
+
+  final GlobalKey? linkKey;
+  final GlobalKey? linkButtonKey;
+  final GlobalKey? lectureButtonKey;
+  final GlobalKey? taskButtonKey;
+
   final ValueChanged<bool?> onLectureCompletedChanged;
   final ValueChanged<bool?> onTaskCompletedChanged;
   final ValueChanged<String> onNameChanged;
@@ -23,6 +29,11 @@ class WeeklyModuleCard extends StatefulWidget {
     required this.onDelete,
     required this.onLectureCompletedChanged,
     required this.onTaskCompletedChanged,
+
+    this.linkKey,
+    this.linkButtonKey,
+    this.lectureButtonKey,
+    this.taskButtonKey,
   });
 
   @override
@@ -71,8 +82,6 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
 
   @override
   Widget build(BuildContext context) {
-    // choose importance color but prefer theme-aware colors
-
     double heightFactor;
     if (widget.wm.importance == 1) {
       heightFactor = 0.33;
@@ -85,7 +94,7 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Slidable(
-        closeOnScroll: false, // Neccessary for ReorderableListview to Work
+        closeOnScroll: false,
         endActionPane: ActionPane(
           motion: DrawerMotion(),
           children: [
@@ -103,18 +112,15 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
           key: widget.key,
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
-            //boxShadow: [BoxShadow(blurRadius: 6, color: Colors.black12)],
             border: Border.all(
               color: Theme.of(context).colorScheme.onSurface,
               width: 1.2,
             ),
             borderRadius: BorderRadius.circular(12),
           ),
-          // Wrap Row in IntrinsicHeight so the left stripe matches the content height
           child: IntrinsicHeight(
             child: Row(
               children: [
-                // --- Left area: show importance as number (clickable to cycle) ---
                 GestureDetector(
                   onTap: widget.onCycleImportance,
                   child: Stack(
@@ -145,7 +151,6 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                   ),
                 ),
 
-                // --- Main content ---
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -179,7 +184,7 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                                               context,
                                             ).colorScheme.primary,
                                             width: 1.2,
-                                          ), // 👈 Fokusfarbe
+                                          ),
                                         ),
                                       ),
                                     )
@@ -206,6 +211,7 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                         Row(
                           children: [
                             IconButton(
+                              key: widget.linkButtonKey, // KANN NULL SEIN
                               icon: const Icon(Icons.link),
                               onPressed: () async {
                                 final url = linkController.text.trim();
@@ -255,6 +261,7 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                                         ).requestFocus(linkFocusNode);
                                       },
                                       child: Text(
+                                        key: widget.linkKey, // KANN NULL SEIN
                                         linkController.text.isEmpty
                                             ? 'Link hinzufügen'
                                             : linkController.text,
@@ -280,6 +287,7 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                     crossAxisAlignment: .center,
                     children: [
                       FancyCheckbox(
+                        key: widget.lectureButtonKey, // KANN NULL SEIN
                         icon: Icons.book_outlined,
                         isChecked: widget.wm.isLectureCompleted,
                         onChanged: (value) =>
@@ -295,6 +303,7 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                       ),
 
                       FancyCheckbox(
+                        key: widget.taskButtonKey, // KANN NULL SEIN
                         icon: Icons.fitness_center_outlined,
                         isChecked: widget.wm.isTaskCompleted,
                         checkColor: Theme.of(
