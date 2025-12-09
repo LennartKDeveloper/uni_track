@@ -56,7 +56,7 @@ class _SettingsPageState extends State<SettingsPage> {
           padding: EdgeInsets.all(24),
           children: [
             SettingsGroup(
-              title: "GENERAL",
+              title: "ALLGEMEIN",
               children: <Widget>[
                 // Widgets in ListView
                 buildDarkMode(),
@@ -66,7 +66,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
             Gap(20),
             SettingsGroup(
-              title: "HELP",
+              title: "HILFE",
               children: <Widget>[
                 // Widgets in ListView
                 Gap(10),
@@ -93,7 +93,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget buildDarkMode() => SwitchSettingTile(
     leading: IconWidget(icon: Icons.dark_mode, color: Colors.deepPurple),
-    title: "Dark Mode",
+    title: "Dunkler Modus",
 
     // keep listening here (used during build)
     value: Provider.of<ThemeNotifier>(context).themeMode == ThemeMode.dark,
@@ -108,7 +108,7 @@ class _SettingsPageState extends State<SettingsPage> {
       icon: Icons.text_snippet_rounded,
       color: Colors.yellow.shade700,
     ),
-    title: "Allow Notifications",
+    title: "Benachrichtigungen",
 
     onChanged: (isNews) {
       isNotification = isNews;
@@ -153,9 +153,9 @@ class _SettingsPageState extends State<SettingsPage> {
       icon: Icons.email_rounded,
       color: Colors.green.shade800,
     ),
-    title: "Message",
+    title: "Nachricht",
 
-    subtitle: "Email the Developer",
+    subtitle: "Email dem Entwickler",
     onTap: () {
       String? encodeQueryParameters(Map<String, String> params) {
         return params.entries
@@ -181,11 +181,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget buildDonationTile() => SimpleSettingTile(
     leading: IconWidget(icon: Icons.paypal_rounded, color: Colors.lightBlue),
-    title:
-        "Donation"
-        "Spende",
+    title: "Spende",
 
-    subtitle: "Support the Developer",
+    subtitle: "Supporte den Entwickler",
     onTap: () {
       launchUrl(
         Uri.parse(
