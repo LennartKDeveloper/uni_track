@@ -19,7 +19,6 @@ class _HomePageState extends State<HomePage> {
   final hiveManager = HiveManager();
   late List<WeeklyModule> modules;
 
-  // Keys einmalig definieren
   final GlobalKey linkKey = GlobalKey();
   final GlobalKey linkButtonKey = GlobalKey();
   final GlobalKey lectureButtonKey = GlobalKey();
@@ -29,20 +28,17 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     hiveManager.ensureCurrentWeekData().then((_) => setState(() {}));
-    // HIER KEIN TUTORIAL AUFRUF MEHR!
   }
 
-  // Diese Funktion wird vom Add-Button aufgerufen
   Future<void> _checkAndShowTutorialAfterAdd() async {
     WidgetsFlutterBinding.ensureInitialized();
     final prefs = await SharedPreferences.getInstance();
     final alreadyShown = prefs.getBool('navigationTutorialShown') ?? false;
 
     if (!alreadyShown) {
-      // WICHTIG: Warten, damit das neue Widget gerendert ist
       await Future.delayed(const Duration(milliseconds: 500));
 
-      if (!mounted) return; // Check ob Screen noch da ist
+      if (!mounted) return;
 
       showTutorial();
       await prefs.setBool('navigationTutorialShown', true);
@@ -234,7 +230,6 @@ class _HomePageState extends State<HomePage> {
 
           final wm = modules[index];
 
-          // NUR DAS ERSTE ELEMENT BEKOMMT DIE KEYS
           final bool isFirstItem = index == 0;
 
           return WeeklyModuleCard(

@@ -12,14 +12,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Hive initialisieren (Flutter-spezifisch)
-  await Hive.initFlutter(); //jhgugiu
+  // Hive initialisieren
+  await Hive.initFlutter();
 
-  // Adapter registrieren (Reihenfolge beachten: enum/Module zuerst)
-  Hive.registerAdapter(ModuleAdapter()); // Module (typeId 1)
-  Hive.registerAdapter(WeeklyModuleAdapter()); // WeeklyModule (typeId 2)
+  // Adapter registrieren
+  Hive.registerAdapter(ModuleAdapter());
+  Hive.registerAdapter(WeeklyModuleAdapter());
 
-  // Boxen öffnen (vor runApp oder in deinem HiveManager)
   await Hive.openBox<Module>('hive_modul');
   await Hive.openBox<WeeklyModule>('hive_weekly_modul');
 
@@ -40,11 +39,8 @@ class MainApp extends StatelessWidget {
             themeMode: themeNotifier.themeMode,
             theme: lightTheme,
             darkTheme: darkTheme,
-            supportedLocales: const [
-              Locale('de', 'DE'), // Deutsch
-              Locale('en', 'US'), // Englisch (als Fallback)
-            ],
-            // Hier lädst du die Übersetzungen für Material Widgets (wie den DatePicker):
+            supportedLocales: const [Locale('de', 'DE'), Locale('en', 'US')],
+
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
