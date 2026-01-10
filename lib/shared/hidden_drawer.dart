@@ -14,7 +14,7 @@ class HiddenDrawer extends StatefulWidget {
 }
 
 class _HiddenDrawerState extends State<HiddenDrawer> {
-  int _selectedIndex = 0; // Index der ausgewählten Seite
+  int _selectedIndex = 0; 
 
   void _updateIndex(int index) {
     setState(() {
@@ -22,11 +22,11 @@ class _HiddenDrawerState extends State<HiddenDrawer> {
     });
   }
 
-  /// Diese Methode aktualisiert den Zustand aller Seiten
+  
   void refreshAllPages() {
     setState(() {
-      // Du kannst hier andere Logiken hinzufügen, um alle Seiten zu aktualisieren
-      // Seiten neu bauen (werden im build() generiert)
+      
+      
     });
   }
 
@@ -91,7 +91,7 @@ class _HiddenDrawerState extends State<HiddenDrawer> {
     return HiddenDrawerMenu(
       elevationAppBar: 0,
       backgroundColorAppBar: Theme.of(context).scaffoldBackgroundColor,
-      backgroundColorMenu: Theme.of(context).canvasColor, //Hidden drawer Farbe
+      backgroundColorMenu: Theme.of(context).canvasColor, 
       screens: pages,
       initPositionSelected: 0,
       slidePercent: 40,

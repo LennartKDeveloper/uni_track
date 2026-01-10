@@ -30,13 +30,13 @@ class SimpleSettingTile extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Leading Icon
+            
             Padding(
               padding: const EdgeInsets.only(right: 12, top: 2),
               child: leading,
             ),
 
-            // Titel + Subtitle
+            
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

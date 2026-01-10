@@ -5,15 +5,15 @@ part 'hive_weekly_modul.g.dart';
 @HiveType(typeId: 2)
 class WeeklyModule extends HiveObject {
   @HiveField(0)
-  DateTime weekStart; // Montag der Woche
+  DateTime weekStart; 
 
   @HiveField(1)
-  Module module; // Referenz auf das Modul
+  Module module; 
 
   @HiveField(2)
   bool isLectureCompleted;
 
-  // Ändere Typ von Importance -> int (1 = rot, 2 = gelb, 3 = grün)
+  
   @HiveField(3)
   int importance;
 
@@ -28,7 +28,7 @@ class WeeklyModule extends HiveObject {
     required this.module,
     this.isLectureCompleted = false,
     this.isTaskCompleted = false,
-    this.importance = 3, // default: 1 (rot)
+    this.importance = 3, 
     this.sortOrder = 0,
   });
 }

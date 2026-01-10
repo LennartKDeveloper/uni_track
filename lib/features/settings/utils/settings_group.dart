@@ -19,7 +19,7 @@ class SettingsGroup extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Überschrift
+        
         Padding(
           padding: titlePadding,
           child: Text(
@@ -33,18 +33,18 @@ class SettingsGroup extends StatelessWidget {
                 ),
           ),
         ),
-        // Inhalte
+        
         Container(
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(8),
-            // boxShadow: [
-            //   BoxShadow(
-            //     color: Colors.black.withOpacity(0.05),
-            //     blurRadius: 4,
-            //     offset: const Offset(0, 2),
-            //   ),
-            // ],
+            
+            
+            
+            
+            
+            
+            
           ),
           child: Column(children: children),
         ),

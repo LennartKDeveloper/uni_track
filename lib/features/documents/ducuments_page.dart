@@ -38,7 +38,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
     if (!mounted) return;
 
     String? title =
-        await _showTitleDialog(); // Code ausgelagert in Hilfsmethode
+        await _showTitleDialog(); 
 
     if (title == null || title.isEmpty) {
       title = "Unbenannt";
@@ -50,8 +50,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
     await ImagePageHandler.saveItems(_items);
   }
 
-  // Hilfsmethode für den Dialog (wird hier und in Detailansicht genutzt,
-  // hier aber lokal dupliziert oder man könnte es global machen)
+  
+  
   Future<String?> _showTitleDialog([String? currentTitle]) {
     String tempTitle = currentTitle ?? "";
     return showDialog<String>(
@@ -90,7 +90,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
     await ImagePageHandler.saveItems(_items);
   }
 
-  // Öffnet Detailansicht und übergibt Callback zum Speichern von Änderungen
+  
   void _openFullScreen(GalleryItem item, int index) {
     Navigator.push(
       context,
@@ -98,7 +98,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
         builder: (context) => FullScreenImagePage(
           item: item,
           onTitleChanged: (newTitle) async {
-            // Callback: Wenn Titel im Detail geändert wird
+            
             setState(() {
               _items[index] = item.copyWith(title: newTitle);
             });
@@ -171,7 +171,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () => _openFullScreen(item, index), // Index übergeben!
+            onTap: () => _openFullScreen(item, index), 
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

@@ -2,9 +2,9 @@ class TimetableEvent {
   final String id;
   final String title;
   final String room;
-  final int dayIndex; // 0 = Montag, 4 = Freitag
-  final double startHour; // z.B. 9.5 für 09:30
-  final double duration; // in Stunden
+  final int dayIndex; 
+  final double startHour; 
+  final double duration; 
   final int colorValue;
 
   TimetableEvent({

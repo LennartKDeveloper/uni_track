@@ -161,7 +161,7 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Name Row + Delete Button
+                        
                         Row(
                           children: [
                             Expanded(
@@ -207,11 +207,11 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                           ],
                         ),
 
-                        // Link Row
+                        
                         Row(
                           children: [
                             IconButton(
-                              key: widget.linkButtonKey, // KANN NULL SEIN
+                              key: widget.linkButtonKey, 
                               icon: const Icon(Icons.link),
                               onPressed: () async {
                                 final url = linkController.text.trim();
@@ -261,7 +261,7 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                                         ).requestFocus(linkFocusNode);
                                       },
                                       child: Text(
-                                        key: widget.linkKey, // KANN NULL SEIN
+                                        key: widget.linkKey, 
                                         linkController.text.isEmpty
                                             ? 'Link hinzufügen'
                                             : linkController.text,
@@ -287,7 +287,7 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                     crossAxisAlignment: .center,
                     children: [
                       FancyCheckbox(
-                        key: widget.lectureButtonKey, // KANN NULL SEIN
+                        key: widget.lectureButtonKey, 
                         icon: Icons.book_outlined,
                         isChecked: widget.wm.isLectureCompleted,
                         onChanged: (value) =>
@@ -303,7 +303,7 @@ class _WeeklyModuleCardState extends State<WeeklyModuleCard> {
                       ),
 
                       FancyCheckbox(
-                        key: widget.taskButtonKey, // KANN NULL SEIN
+                        key: widget.taskButtonKey, 
                         icon: Icons.fitness_center_outlined,
                         isChecked: widget.wm.isTaskCompleted,
                         checkColor: Theme.of(

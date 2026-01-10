@@ -4,7 +4,7 @@ class GalleryItem {
 
   GalleryItem({required this.imagePath, required this.title});
 
-  // Helper, um eine Kopie mit neuem Titel zu erstellen
+  
   GalleryItem copyWith({String? imagePath, String? title}) {
     return GalleryItem(
       imagePath: imagePath ?? this.imagePath,

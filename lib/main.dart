@@ -12,10 +12,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Hive initialisieren
+  
   await Hive.initFlutter();
 
-  // Adapter registrieren
+  
   Hive.registerAdapter(ModuleAdapter());
   Hive.registerAdapter(WeeklyModuleAdapter());
 

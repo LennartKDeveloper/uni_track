@@ -29,24 +29,6 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {});
   }
 
-  // String getCurrentUserEmail() {
-  //   return "FAKE@gmail.com";
-  // }
-
-  // void showDataDownloadAlert() {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) {
-  //       return DataDownloadAlert(
-  //         currentUserEmail: getCurrentUserEmail(),
-  //         callback: () {
-  //           //FIXME: callback für Datadownload fehlt
-  //         },
-  //       );
-  //     },
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,31 +39,19 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             SettingsGroup(
               title: "ALLGEMEIN",
-              children: <Widget>[
-                // Widgets in ListView
-                buildDarkMode(),
-                buildNotificationSwitch(),
-              ],
+              children: <Widget>[buildDarkMode(), buildNotificationSwitch()],
             ),
 
             Gap(20),
             SettingsGroup(
               title: "HILFE",
-              children: <Widget>[
-                // Widgets in ListView
-                Gap(10),
-                buildMassageTile(),
-              ],
+              children: <Widget>[Gap(10), buildMassageTile()],
             ),
 
             Gap(20),
             SettingsGroup(
               title: "SUPPORT",
-              children: <Widget>[
-                // Widgets in ListView
-                Gap(10),
-                buildDonationTile(),
-              ],
+              children: <Widget>[Gap(10), buildDonationTile()],
             ),
 
             Gap(20),
@@ -95,9 +65,8 @@ class _SettingsPageState extends State<SettingsPage> {
     leading: IconWidget(icon: Icons.dark_mode, color: Colors.deepPurple),
     title: "Dunkler Modus",
 
-    // keep listening here (used during build)
     value: Provider.of<ThemeNotifier>(context).themeMode == ThemeMode.dark,
-    // but do not listen inside the event handler — use listen: false
+
     onChanged: (_) =>
         Provider.of<ThemeNotifier>(context, listen: false).toggleTheme(),
   );
@@ -115,38 +84,6 @@ class _SettingsPageState extends State<SettingsPage> {
       act();
     },
   );
-
-  // Widget buildOrderSwitch() => SwitchSettingTile(
-  //   value: isTopOrder,
-  //   leading: SwitchableIconWidget(
-  //     state: isTopOrder,
-  //     icon: Icons.vertical_align_bottom_rounded,
-  //     icon2: Icons.vertical_align_top_rounded,
-  //     color: Colors.blue,
-  //   ),
-
-  //   title: "Order for new Cards",
-  //   onChanged: (order) {
-  //     isTopOrder = order;
-  //     act();
-  //   },
-  // );
-
-  // Widget buildRewardSwitch() => SwitchSettingTile(
-  //   value: isReward,
-  //   leading: SwitchableIconWidget(
-  //     state: isReward,
-  //     icon: Icons.auto_fix_off_rounded,
-  //     icon2: Icons.auto_fix_high,
-  //     color: Colors.pinkAccent.shade700,
-  //   ),
-
-  //   title: "Rewards",
-  //   onChanged: (reward) {
-  //     isReward = reward;
-  //     act();
-  //   },
-  // );
 
   Widget buildMassageTile() => SimpleSettingTile(
     leading: IconWidget(
@@ -166,12 +103,10 @@ class _SettingsPageState extends State<SettingsPage> {
             .join('&');
       }
 
-      // ···
       final Uri emailLaunchUri = Uri(
         scheme: 'mailto',
         path: 'infinity.tasks.feedback@gmail.com',
         query: encodeQueryParameters(<String, String>{
-          //Betreff
           'subject': "Developer Support",
         }),
       );
@@ -190,29 +125,6 @@ class _SettingsPageState extends State<SettingsPage> {
           "https://www.paypal.com/donate/?hosted_button_id=3DABQ3TSQ2YGN",
         ),
       );
-      //Track Activity
     },
   );
-
-  // Widget buildDownloadTile() => SimpleSettingTile(
-  //   leading: IconWidget(
-  //     icon: Icons.cloud_download_rounded,
-  //     color: Colors.greenAccent,
-  //   ),
-  //   title: "Download",
-  //   subtitle: "secured data from the cloud",
-  //   onTap: showDataDownloadAlert,
-  // );
-  // Widget buildLogInTile() => SimpleSettingTile(
-  //   leading: IconWidget(
-  //     icon: Icons.account_circle_rounded,
-  //     color: isguest ? Colors.green : Colors.red,
-  //   ),
-  //   title: isguest ? "log in" : "Log out",
-  //   subtitle: getCurrentUserEmail(),
-  //   onTap: () {
-  //     isguest = !isguest;
-  //     act();
-  //   },
-  // );
 }

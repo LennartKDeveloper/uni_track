@@ -1,10 +1,10 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+
 
 part of 'hive_weekly_modul.dart';
 
-// **************************************************************************
-// TypeAdapterGenerator
-// **************************************************************************
+
+
+
 
 class WeeklyModuleAdapter extends TypeAdapter<WeeklyModule> {
   @override

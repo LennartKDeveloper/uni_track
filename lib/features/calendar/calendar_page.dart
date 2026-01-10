@@ -4,10 +4,6 @@ import 'package:gap/gap.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uni_track/features/calendar/timetable_event.dart';
 
-// --- DATENMODELL ---
-
-// --- HAUPTWIDGET ---
-
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
 
@@ -16,13 +12,11 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  // Konfiguration
   final int _startHour = 8;
   final int _endHour = 20;
   final double _hourHeight = 60.0;
   final List<String> _weekDays = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];
 
-  // State
   List<TimetableEvent> _events = [];
   bool _isLoading = true;
 
@@ -31,8 +25,6 @@ class _CalendarPageState extends State<CalendarPage> {
     super.initState();
     _loadEvents();
   }
-
-  // --- LOGIK: LADEN, SPEICHERN, PRÜFEN ---
 
   Future<void> _loadEvents() async {
     final prefs = await SharedPreferences.getInstance();
@@ -56,8 +48,6 @@ class _CalendarPageState extends State<CalendarPage> {
     await prefs.setString('timetable_events', encoded);
   }
 
-  // Prüft auf Überschneidungen
-  // excludeId: Wird beim Bearbeiten benötigt, damit das Event nicht mit sich selbst kollidiert
   bool _hasOverlap(
     int dayIndex,
     double start,
@@ -65,12 +55,12 @@ class _CalendarPageState extends State<CalendarPage> {
     String? excludeId,
   }) {
     for (final event in _events) {
-      if (event.id == excludeId) continue; // Sich selbst ignorieren
-      if (event.dayIndex != dayIndex) continue; // Anderer Tag
+      if (event.id == excludeId) continue; 
+      if (event.dayIndex != dayIndex) continue; 
 
       double eventEnd = event.startHour + event.duration;
 
-      // Logik: (StartA < EndB) und (EndA > StartB) bedeutet Überlappung
+      
       if (start < eventEnd && end > event.startHour) {
         return true;
       }
@@ -80,7 +70,7 @@ class _CalendarPageState extends State<CalendarPage> {
 
   void _addOrUpdateEvent(TimetableEvent newEvent) {
     setState(() {
-      // Falls wir bearbeiten (ID existiert schon), altes entfernen
+      
       _events.removeWhere((e) => e.id == newEvent.id);
       _events.add(newEvent);
     });
@@ -94,7 +84,7 @@ class _CalendarPageState extends State<CalendarPage> {
     _saveEvents();
   }
 
-  // --- DIALOG FÜR NEUE / BEARBEITEN ---
+  
 
   void _showEventDialog(
     BuildContext context, {
@@ -104,7 +94,7 @@ class _CalendarPageState extends State<CalendarPage> {
   }) {
     final bool isEditing = existingEvent != null;
 
-    // Startwerte ermitteln (wie vorher)
+    
     double initialStart =
         existingEvent?.startHour ??
         startHourSuggestion ??
@@ -141,25 +131,25 @@ class _CalendarPageState extends State<CalendarPage> {
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // Wichtig, damit das Sheet wachsen kann
+      isScrollControlled: true, 
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setModalState) {
-            // HIER IST DIE ÄNDERUNG:
-            // Wir nutzen Padding um viewInsets, aber packen alles in SingleChildScrollView.
-            // Das Padding wird auf das Child des ScrollViews angewendet oder direkt darin.
+            
+            
+            
             return Padding(
-              // Wir geben dem Sheet nur von unten Druck, wenn die Tastatur kommt
+              
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
               child: SingleChildScrollView(
-                // Das ScrollView fängt den Overflow ab
+                
                 child: Padding(
-                  // Inneres Padding für den hübschen Rand
+                  
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -201,10 +191,10 @@ class _CalendarPageState extends State<CalendarPage> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Titel
+                      
                       TextField(
                         controller: titleController,
-                        // autofocus: true, // Optional: Tastatur öffnet sich sofort
+                        
                         decoration: InputDecoration(
                           labelText: "Titel (z.B. Mathe)",
                           border: OutlineInputBorder(
@@ -218,7 +208,7 @@ class _CalendarPageState extends State<CalendarPage> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Raum
+                      
                       TextField(
                         controller: roomController,
                         decoration: InputDecoration(
@@ -234,7 +224,7 @@ class _CalendarPageState extends State<CalendarPage> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Zeit Slider
+                      
                       Text(
                         "Zeitraum: ${_formatTime(start)} - ${_formatTime(end)}",
                       ),
@@ -257,7 +247,7 @@ class _CalendarPageState extends State<CalendarPage> {
                         },
                       ),
 
-                      // Farbe
+                      
                       const SizedBox(height: 12),
                       const Text("Farbe"),
                       const SizedBox(height: 8),
@@ -296,7 +286,7 @@ class _CalendarPageState extends State<CalendarPage> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Speichern Button
+                      
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -352,7 +342,7 @@ class _CalendarPageState extends State<CalendarPage> {
                           ),
                         ),
                       ),
-                      // Ein kleiner Gap unten, damit es nicht direkt am Rand klebt beim Scrollen
+                      
                       const Gap(20),
                     ],
                   ),
@@ -365,7 +355,7 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
-  // --- UI HELPER ---
+  
 
   String _formatTime(double hour) {
     int h = hour.floor();
@@ -382,7 +372,7 @@ class _CalendarPageState extends State<CalendarPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // HEADER
+            
             Container(
               height: 50,
               decoration: BoxDecoration(
@@ -419,14 +409,14 @@ class _CalendarPageState extends State<CalendarPage> {
               ),
             ),
 
-            // GRID
+            
             Expanded(
               child: SingleChildScrollView(
                 child: SizedBox(
                   height: (_endHour - _startHour) * _hourHeight,
                   child: Stack(
                     children: [
-                      // 1. Hintergrund-Linien & Zeit
+                      
                       Column(
                         children: List.generate(_endHour - _startHour, (index) {
                           return SizedBox(
@@ -475,7 +465,7 @@ class _CalendarPageState extends State<CalendarPage> {
                         }),
                       ),
 
-                      // 2. Vertikale Tag-Trenner
+                      
                       Row(
                         children: [
                           const SizedBox(width: 50),
@@ -496,10 +486,10 @@ class _CalendarPageState extends State<CalendarPage> {
                         ],
                       ),
 
-                      // 3. INTERAKTIONS-LAYER FÜR NEUE TERMINE (Hintergrund-Klicks)
-                      // WICHTIG: Dies muss VOR den Events im Stack kommen (also weiter unten im Code),
-                      // oder wir müssen sicherstellen, dass Events drüber liegen.
-                      // Hier legen wir den "leeren" Klickbereich zuerst, damit Events (die später kommen) darüber liegen.
+                      
+                      
+                      
+                      
                       Row(
                         children: [
                           const SizedBox(width: 50),
@@ -511,7 +501,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                   final double y = details.localPosition.dy;
                                   final double clickedHour =
                                       _startHour + (y / _hourHeight);
-                                  // Dialog für NEUEN Termin
+                                  
                                   _showEventDialog(
                                     context,
                                     dayIndex: dayIndex,
@@ -525,7 +515,7 @@ class _CalendarPageState extends State<CalendarPage> {
                         ],
                       ),
 
-                      // 4. DIE EVENTS (Drübergelegt, damit sie klickbar sind)
+                      
                       LayoutBuilder(
                         builder: (context, constraints) {
                           final double dayWidth =
@@ -542,7 +532,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                 height: event.duration * _hourHeight,
                                 child: GestureDetector(
                                   onTap: () {
-                                    // Dialog zum BEARBEITEN
+                                    
                                     _showEventDialog(
                                       context,
                                       dayIndex: event.dayIndex,
@@ -579,7 +569,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                         if (event.duration > 0.5) ...[
-                                          // Nur anzeigen wenn genug Platz
+                                          
                                           const SizedBox(height: 2),
                                           Text(
                                             event.room,

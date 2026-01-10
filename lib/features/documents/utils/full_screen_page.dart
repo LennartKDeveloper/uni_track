@@ -56,7 +56,7 @@ class _FullScreenImagePageState extends State<FullScreenImagePage> {
       setState(() {
         _currentTitle = newTitle;
       });
-      // Benachrichtige die Parent-Page über die Änderung
+      
       widget.onTitleChanged(newTitle);
     }
   }
@@ -67,7 +67,7 @@ class _FullScreenImagePageState extends State<FullScreenImagePage> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
-          // Zoombares Bild
+          
           Center(
             child: InteractiveViewer(
               minScale: 0.5,
@@ -78,7 +78,7 @@ class _FullScreenImagePageState extends State<FullScreenImagePage> {
               ),
             ),
           ),
-          // Zurück Button
+          
           Positioned(
             top: 40,
             left: 20,
@@ -95,7 +95,7 @@ class _FullScreenImagePageState extends State<FullScreenImagePage> {
               ),
             ),
           ),
-          // Titel unten (Klickbar)
+          
           Positioned(
             bottom: 40,
             left: 20,
