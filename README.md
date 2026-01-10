@@ -88,5 +88,10 @@ Contributions are welcome! If you have ideas for new features or want to improve
 
 ---
 
+## 📝 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
 
 **Made by Lennart K.**
